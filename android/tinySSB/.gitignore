@@ -1,0 +1,8 @@
+# AndroidStudio
+.idea
+.gradle
+
+# emacs backup files
+*~
+
+local.properties
