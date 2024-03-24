@@ -19,9 +19,9 @@ class AppsInterface (context: Context) {
         return appsSubDir.toString()
     }
 
-    fun listApps(): String {
+    fun listApps(): MutableList<String> {
         val directory = File(getAppDirectoryPath())
-        var filesList: String = "Apps: "
+        var filesList: MutableList<String> = mutableListOf()
 
         // Check if the directory exists and is indeed a directory
         if (directory.exists() && directory.isDirectory) {
@@ -31,16 +31,12 @@ class AppsInterface (context: Context) {
             if (filesAndFolders != null) { // Make sure the list is not null
                 for (item in filesAndFolders) {
                     if (item.isDirectory) {
-                        if (filesList == "Apps: ") {
-                            filesList += "${item.name}"
-                        } else {
-                            filesList += ", ${item.name}"
-                        }
+                        filesList.add("${item.name}")
                     }
                 }
             }
         } else {
-            filesList = "The path provided is not a directory or does not exist."
+            filesList.add("ERROR!")
         }
 
         return filesList

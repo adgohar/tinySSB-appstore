@@ -250,8 +250,14 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
             "apps:listApps" -> {
                 val ctx = act.applicationContext
                 val appsInterface = AppsInterface(ctx)
-                val files = appsInterface.listApps()
-                Log.d("AppsRequest", files)
+                val apps = appsInterface.listApps()
+                var appList = Bipf.mkList();
+                for (app in apps) {
+                    Bipf.list_append(appList, Bipf.mkString(app))
+                }
+                val body = Bipf.bipf_list2JSON(appList)
+                Log.d("AppsRequest", "Apps: $body")
+                eval("listApps('$body')")
             }
             "apps:addApp" -> {
                 if (args.size < 2 || args[1] == "") {
