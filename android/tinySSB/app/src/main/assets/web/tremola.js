@@ -36,6 +36,22 @@ function menu_sync() {
 }
 */
 
+function getApps() {
+    backend("apps:listApps");
+}
+
+function addApp(appName) {
+    backend("apps:addApp " + appName);
+}
+
+function removeApp(appName) {
+    backend("apps:removeApp " + appName);
+}
+
+function listApps(appsListString) {
+    const appsList = JSON.parse(appsListString);
+}
+
 function menu_new_conversation() {
     fill_members();
     prev_scenario = 'chats';
