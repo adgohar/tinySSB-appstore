@@ -22,7 +22,8 @@ var scenarioDisplay = {
     'members': ['div:back', 'core', 'lst:members', 'div:confirm-members'],
     'settings': ['div:back', 'div:settings', 'core'],
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
-    'board': ['div:back', 'core', 'div:board']
+    'board': ['div:back', 'core', 'div:board'],
+    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer']
 }
 
 var scenarioMenu = {
@@ -112,7 +113,7 @@ function setScenario(s) {
     var lst = scenarioDisplay[s];
     if (lst) {
         // if (s != 'posts' && curr_scenario != "members" && curr_scenario != 'posts') {
-        if (['chats', 'contacts', 'connex', 'kanban'].indexOf(curr_scenario) >= 0) {
+        if (['chats', 'contacts', 'connex', 'kanban', 'apps'].indexOf(curr_scenario) >= 0) {
             var cl = document.getElementById('btn:' + curr_scenario).classList;
             cl.toggle('active', false);
             cl.toggle('passive', true);
@@ -146,7 +147,7 @@ function setScenario(s) {
             prev_scenario = s;
         }
         curr_scenario = s;
-        if (['chats', 'contacts', 'connex', 'kanban'].indexOf(curr_scenario) >= 0) {
+        if (['chats', 'contacts', 'connex', 'kanban', 'apps'].indexOf(curr_scenario) >= 0) {
             var cl = document.getElementById('btn:' + curr_scenario).classList;
             cl.toggle('active', true);
             cl.toggle('passive', false);
@@ -170,12 +171,19 @@ function setScenario(s) {
             }
         }
 
+        if (s == 'apps') {
+            document.getElementById('lst:apps').style.display = 'initial';
+            document.getElementById('core').style.height = 'calc(100%-450px)';
+        } else {
+            document.getElementById('lst:apps').style.display = 'none';
+        }
+
     }
 }
 
 function btnBridge(e) {
     var e = e.id, m = '';
-    if (['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex', 'btn:kanban'].indexOf(e) >= 0) {
+    if (['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex', 'btn:kanban', 'btn:apps'].indexOf(e) >= 0) {
         setScenario(e.substring(4));
     }
     if (e == 'btn:menu') {
