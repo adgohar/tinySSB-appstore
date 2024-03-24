@@ -247,6 +247,31 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     "websocket_url" -> {act.settings!!.setWebsocketUrl(args[2])}
                 }
             }
+            "apps:listApps" -> {
+                val ctx = act.applicationContext
+                val appsInterface = AppsInterface(ctx)
+                val files = appsInterface.listApps()
+                Log.d("AppsRequest", files)
+            }
+            "apps:addApp" -> {
+                if (args.size < 2 || args[1] == "") {
+                    Log.d("AppsRequest", "You must provide the name of the App!")
+                } else {
+                    val ctx = act.applicationContext
+                    val appsInterface = AppsInterface(ctx)
+                    val status = appsInterface.addApp(args[1])
+                    Log.d("AppsRequest", status)
+                }
+            } "apps:removeApp" -> {
+            if (args.size < 2 || args[1] == "") {
+                Log.d("AppsRequest", "You must provide the name of the App!")
+            } else {
+                val ctx = act.applicationContext
+                val appsInterface = AppsInterface(ctx)
+                val status = appsInterface.removeApp(args[1])
+                Log.d("AppsRequest", status)
+            }
+            }
             else -> {
                 Log.d("onFrontendRequest", "unknown")
             }
