@@ -23,7 +23,7 @@ var scenarioDisplay = {
     'settings': ['div:back', 'div:settings', 'core'],
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
-    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer']
+    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer', 'plus']
 }
 
 var scenarioMenu = {
@@ -174,6 +174,7 @@ function setScenario(s) {
         if (s == 'apps') {
             document.getElementById('lst:apps').style.display = 'initial';
             document.getElementById('core').style.height = 'calc(100%-450px)';
+            getApps();
         } else {
             document.getElementById('lst:apps').style.display = 'none';
         }
@@ -264,6 +265,8 @@ function closeOverlay() {
     document.getElementById('div:debug').style.display = 'none'
     document.getElementById("div:invite_menu").style.display = 'none'
 
+    document.getElementById("appCreationModal").style.display = 'none'
+
     overlayIsActive = false;
 
     if (curr_img_candidate != null) {
@@ -306,6 +309,8 @@ function plus_button() {
         menu_new_pub();
     } else if (curr_scenario == 'kanban') {
         menu_new_board();
+    } else if (curr_scenario == 'apps') {
+        displayAppCreationUI();
     }
 }
 
