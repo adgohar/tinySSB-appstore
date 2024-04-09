@@ -36,11 +36,22 @@ function menu_sync() {
 }
 */
 
+function appController() {
+
+    getApps();
+}
+
+function displayAppCreationUI() {
+    document.getElementById("appCreationModal").style.display = "block";
+    overlayIsActive = true;
+}
+
 function getApps() {
+    console.log(convertImageToBase64("img/Witcher_3.jpg"));
     backend("apps:listApps");
 }
 
-function addApp(appName) {
+function addApp(appName, appIconBase64) {
     backend("apps:addApp " + appName);
 }
 
@@ -50,7 +61,61 @@ function removeApp(appName) {
 
 function listApps(appsListString) {
     const appsList = JSON.parse(appsListString);
+    removeAllAppsUI();
+    for (const app of appsList) {
+        createAppUI(app, '');
+    }
 }
+
+function removeAllAppsUI() {
+    const appListUI = document.getElementById('appsList');
+    while (appListUI.firstChild) {
+        appListUI.removeChild(appListUI.firstChild);
+    }
+}
+
+function convertImageToBase64(imagePath) {
+    fetch(imagePath)
+        .then(response => response.blob())
+        .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64String = reader.result;
+                // Use the base64 string here. For example, you can call your createAppUI function
+                return base64String; // This is your base64 encoded image
+            };
+            reader.readAsDataURL(blob);
+        })
+        .catch(error => console.error('Error converting image to Base64:', error));
+}
+
+
+function createAppUI(appName, appIconBase64) {
+    const appListUI = document.getElementById('appsList');
+
+    const appButton = document.createElement('button');
+    appButton.style.display = 'flex';
+    appButton.style.flexDirection = 'column';
+    appButton.style.alignItems = 'center';
+    appButton.style.justifyContent = 'center';
+
+    const imageDataUrl = 'data:image/jpeg;base64,${appIconBase64}';
+
+    const appImage = document.createElement('img');
+    appImage.src = imageDataUrl;
+    appImage.alt = appName;
+    appImage.style.width = '50px';
+    appImage.style.height = '50px';
+
+    const appLabel = document.createElement('span');
+    appLabel.textContent = appName;
+
+    appButton.appendChild(appImage);
+    appButton.appendChild(appLabel);
+
+    appListUI.appendChild(appButton);
+}
+
 
 function menu_new_conversation() {
     fill_members();
