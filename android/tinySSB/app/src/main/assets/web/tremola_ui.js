@@ -310,7 +310,7 @@ function plus_button() {
     } else if (curr_scenario == 'kanban') {
         menu_new_board();
     } else if (curr_scenario == 'apps') {
-        displayAppCreationUI();
+        appController();
     }
 }
 

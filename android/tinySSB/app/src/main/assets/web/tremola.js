@@ -37,7 +37,6 @@ function menu_sync() {
 */
 
 function appController() {
-
     getApps();
 }
 
@@ -47,23 +46,29 @@ function displayAppCreationUI() {
 }
 
 function getApps() {
-    console.log(convertImageToBase64("img/Witcher_3.jpg"));
     backend("apps:listApps");
 }
 
 function addApp(appName, appIconBase64) {
-    backend("apps:addApp " + appName);
+    backend("apps:addApp " + appName + " " + appIconBase64);
+}
+
+function addAppFile(appName, fileName, fileBase64) {
+    backend("apps:updateApp " + appName + " " + fileName + " " + fileBase64);
 }
 
 function removeApp(appName) {
     backend("apps:removeApp " + appName);
 }
 
-function listApps(appsListString) {
-    const appsList = JSON.parse(appsListString);
+function listApps(appNameListString, appIconListString) {
+    const appNameList = JSON.parse(appNameListString);
+    const appIconList = JSON.parse(appIconListString);
     removeAllAppsUI();
-    for (const app of appsList) {
-        createAppUI(app, '');
+    let i = 0;
+    for (const appName of appNameList) {
+        createAppUI(appName, appIconList[i]);
+        i += 1;
     }
 }
 
@@ -74,22 +79,6 @@ function removeAllAppsUI() {
     }
 }
 
-function convertImageToBase64(imagePath) {
-    fetch(imagePath)
-        .then(response => response.blob())
-        .then(blob => {
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                const base64String = reader.result;
-                // Use the base64 string here. For example, you can call your createAppUI function
-                return base64String; // This is your base64 encoded image
-            };
-            reader.readAsDataURL(blob);
-        })
-        .catch(error => console.error('Error converting image to Base64:', error));
-}
-
-
 function createAppUI(appName, appIconBase64) {
     const appListUI = document.getElementById('appsList');
 
@@ -99,7 +88,7 @@ function createAppUI(appName, appIconBase64) {
     appButton.style.alignItems = 'center';
     appButton.style.justifyContent = 'center';
 
-    const imageDataUrl = 'data:image/jpeg;base64,${appIconBase64}';
+    const imageDataUrl = `data:image/jpeg;base64,${appIconBase64}`;
 
     const appImage = document.createElement('img');
     appImage.src = imageDataUrl;

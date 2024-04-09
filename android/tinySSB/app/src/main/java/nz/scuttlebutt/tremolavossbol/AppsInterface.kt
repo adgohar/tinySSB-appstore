@@ -1,6 +1,8 @@
 package nz.scuttlebutt.tremolavossbol
 import java.io.File
+import java.util.Base64
 import android.content.Context
+
 
 class AppsInterface (context: Context) {
     private val context = context
@@ -19,27 +21,39 @@ class AppsInterface (context: Context) {
         return appsSubDir.toString()
     }
 
-    fun listApps(): MutableList<String> {
+    fun listApps(): MutableMap<String, String> {
         val directory = File(getAppDirectoryPath())
-        var filesList: MutableList<String> = mutableListOf()
+        val appsInfo = mutableMapOf<String, String>()
 
         // Check if the directory exists and is indeed a directory
         if (directory.exists() && directory.isDirectory) {
             // List all files and directories within the directory
-            val filesAndFolders = directory.listFiles()
+            val appFolders = directory.listFiles()
 
-            if (filesAndFolders != null) { // Make sure the list is not null
-                for (item in filesAndFolders) {
-                    if (item.isDirectory) {
-                        filesList.add("${item.name}")
+            if (appFolders != null) {
+                for (appFolder in appFolders) {
+                    if (appFolder.isDirectory) {
+                        val iconFile = File(appFolder, "icon.png") //icon always named so
+                        val appName = appFolder.name
+                        var iconBase64: String
+
+                        if (iconFile.exists()) {
+                            try {
+                                val fileContent = iconFile.readBytes()
+                                iconBase64 = Base64.getEncoder().encodeToString(fileContent)
+                            } catch (e: Exception) {
+                                iconBase64 = "No Icon"
+                            }
+                        } else {
+                            iconBase64 = "No Icon"
+                        }
+                        appsInfo[appName] = iconBase64
                     }
                 }
             }
-        } else {
-            filesList.add("ERROR!")
         }
 
-        return filesList
+        return appsInfo
     }
 
     fun createDirectory(path: String, folderName: String): Boolean {
@@ -56,7 +70,7 @@ class AppsInterface (context: Context) {
         return status
     }
 
-    fun addApp(appName: String): String {
+    fun addApp(appName: String, appIcon: String): String {
         val appsDirectory = File(getAppDirectoryPath())
 
         // Check if app directory exists
@@ -66,7 +80,18 @@ class AppsInterface (context: Context) {
             if (!newAppFolder.exists()) {
                 val status = newAppFolder.mkdir()
                 if (status) {
-                    return "Successfuly added app: " + appName
+                    try {
+                        val imageBytes = Base64.getDecoder().decode(appIcon)
+                        val imageFile = File(newAppFolder, "icon.png")
+                        imageFile.writeBytes(imageBytes)
+                        return "Successfully added app: $appName"
+                    } catch (e: IllegalArgumentException) {
+                        // This catches decode errors if the Base64 data is invalid
+                        return "Error decoding app icon for: $appName"
+                    } catch (e: Exception) {
+                        // This catches other errors, such as file write errors
+                        return "Error saving app icon for: $appName"
+                    }
                 } else {
                     return "Error while adding app: " + appName
                 }
@@ -83,20 +108,48 @@ class AppsInterface (context: Context) {
 
         // Check if app directory exists
         if (appsDirectory.exists() && appsDirectory.isDirectory) {
-            val newAppFolder = File(appsDirectory, appName)
+            val appFolder = File(appsDirectory, appName)
 
-            if (newAppFolder.exists()) {
-                val status = newAppFolder.delete()
-                if (status) {
-                    return "Successfuly removed app: " + appName
+            if (appFolder.exists()) {
+                appFolder.deleteRecursively()
+                if (!appFolder.exists()) {
+                    return "Successfully removed app: $appName"
                 } else {
-                    return "Error while removing app: " + appName
+                    return "Error while removing app: $appName"
                 }
             } else {
                 return "No app exists with this name"
             }
         } else {
             return "Apps directory does not exist";
+        }
+    }
+
+    fun updateApp(appName: String, fileName: String, fileContent: String): String {
+        val appsDirectory = File(getAppDirectoryPath())
+
+        // Check if app directory exists
+        if (appsDirectory.exists() && appsDirectory.isDirectory) {
+            val newAppFolder = File(appsDirectory, appName)
+
+            if (!newAppFolder.exists()) {
+                return "No app with name " + appName
+            } else {
+                try {
+                    val fileBytes = Base64.getDecoder().decode(fileContent)
+                    val file = File(newAppFolder, fileName)
+                    file.writeBytes(fileBytes)
+                    return "Successfully updated app: $appName , added file: $fileName"
+                } catch (e: IllegalArgumentException) {
+                    // This catches decode errors if the Base64 data is invalid
+                    return "Error decoding app file for: $appName"
+                } catch (e: Exception) {
+                    // This catches other errors, such as file write errors
+                    return "Error saving app file for: $appName"
+                }
+                }
+        } else {
+            return "Apps directory does not exist"
         }
     }
 
