@@ -153,4 +153,36 @@ class AppsInterface (context: Context) {
         }
     }
 
+    fun loadApp(appName: String): MutableMap<String, String> {
+
+        val appsDirectory = File(getAppDirectoryPath())
+        val appFiles = mutableMapOf<String, String>()
+
+        // Check if the directory exists and is indeed a directory
+        if (appsDirectory.exists() && appsDirectory.isDirectory) {
+            // List all files and directories within the directory
+            val appFolder = File(appsDirectory, appName)
+
+            if (appFolder.exists() && appFolder.isDirectory) {
+                val jsFile = File(appFolder, "main.js") //load js file
+                var jsBase64: String
+
+                if (jsFile.exists()) {
+                    try {
+                        val fileContent = jsFile.readBytes()
+                        jsBase64 = Base64.getEncoder().encodeToString(fileContent)
+                        appFiles["Status"] = "Success"
+                        appFiles["JS"] = jsBase64
+                    } catch (e: Exception) {
+                        appFiles["Status"] = "Error: Could not load JS File for $appName"
+                    }
+                } else {
+                    appFiles["Status"] = "Error: No JS File for $appName"
+                }
+            }
+        } else {
+            appFiles["Status"] = "Error: No App with name $appName"
+        }
+        return appFiles
+    }
 }

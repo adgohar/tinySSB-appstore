@@ -37,6 +37,9 @@ function menu_sync() {
 */
 
 function appController() {
+    document.getElementById("appScreen").style.display = "none";
+    //addAppFile("RDR2", "main.js", "ZnVuY3Rpb24gYXBwQWN0aW9uKCkgew0KICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJhcHBEaXYiKS5pbm5lckhUTUwgPSAiUHJvdGFnb25pc3QgaXMgU2FkaWUgQWRsZXIhIjsNCn0")
+    addAppFile("RDR2", "main.js", "ZnVuY3Rpb24gYXBwQWN0aW9uKCkgew0KICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCJhcHBEaXYiKS5pbm5lckhUTUwgPSAiUHJvdGFnb25pc3QgaXMgQXJ0aHVyIE1vcmdhbiEiOw0KfQ==")
     getApps();
 }
 
@@ -79,6 +82,35 @@ function removeAllAppsUI() {
     }
 }
 
+function loadApp(appName) {
+    backend("apps:loadApp " + appName);
+}
+
+function loadAppJS(jsBase64) {
+
+    // Convert base64 string to a Blob
+    let scriptBlob = new Blob([Uint8Array.from(atob(jsBase64), c => c.charCodeAt(0))], {type: 'application/javascript'});
+
+    // Create a URL for the Blob
+    let scriptURL = URL.createObjectURL(scriptBlob);
+
+    // Create a new script element
+    let scriptElement = document.createElement('script');
+
+    // Set the source of the script element to the Blob URL
+    scriptElement.src = scriptURL;
+
+    // Append the script element to the document
+    document.body.appendChild(scriptElement);
+
+    // Optional: Clean up the Blob URL after the script is loaded
+    scriptElement.onload = function() {
+        URL.revokeObjectURL(scriptURL);
+    };
+
+    document.getElementById("appScreen").style.display = "block";
+}
+
 function createAppUI(appName, appIconBase64) {
     const appListUI = document.getElementById('appsList');
 
@@ -87,6 +119,10 @@ function createAppUI(appName, appIconBase64) {
     appButton.style.flexDirection = 'column';
     appButton.style.alignItems = 'center';
     appButton.style.justifyContent = 'center';
+
+    appButton.onclick = function () {
+        loadApp(appName);
+    };
 
     const imageDataUrl = `data:image/jpeg;base64,${appIconBase64}`;
 
