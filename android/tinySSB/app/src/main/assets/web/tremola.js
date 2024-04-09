@@ -119,7 +119,11 @@ function loadAppJS(jsBase64) {
         URL.revokeObjectURL(scriptURL);
     };
 
-    document.getElementById("appScreen").style.display = "block";
+    toggleAppScreen();
+}
+
+function toggleAppScreen() {
+    setScenario('game');
 }
 
 function createAppUI(appName, appIconBase64) {

@@ -23,7 +23,8 @@ var scenarioDisplay = {
     'settings': ['div:back', 'div:settings', 'core'],
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
-    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer', 'plus']
+    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer', 'plus'],
+    'game': ['div:back', 'core', 'lst:appScreen']
 }
 
 var scenarioMenu = {
@@ -177,6 +178,10 @@ function setScenario(s) {
             getApps();
         } else {
             document.getElementById('lst:apps').style.display = 'none';
+        } if (s == 'game') {
+            document.getElementById('appScreen').style.display = 'block';
+        } else {
+            document.getElementById('appScreen').style.display = 'none'
         }
 
     }
