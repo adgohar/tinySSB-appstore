@@ -251,21 +251,25 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 val ctx = act.applicationContext
                 val appsInterface = AppsInterface(ctx)
                 val apps = appsInterface.listApps()
-                var appList = Bipf.mkList();
+                var appNameList = Bipf.mkList()
+                var appIconList = Bipf.mkList()
                 for (app in apps) {
-                    Bipf.list_append(appList, Bipf.mkString(app))
+                    Bipf.list_append(appNameList, Bipf.mkString(app.key))
+                    Bipf.list_append(appIconList, Bipf.mkString(app.value))
                 }
-                val body = Bipf.bipf_list2JSON(appList)
-                Log.d("AppsRequest", "Apps: $body")
-                eval("listApps('$body')")
+                val appNames = Bipf.bipf_list2JSON(appNameList)
+                val appIcons = Bipf.bipf_list2JSON(appIconList)
+                Log.d("AppsRequest", "Apps: $appNames")
+                Log.d("AppsRequest", "Apps: $appIcons")
+                eval("listApps('$appNames', '$appIcons')")
             }
             "apps:addApp" -> {
-                if (args.size < 2 || args[1] == "") {
-                    Log.d("AppsRequest", "You must provide the name of the App!")
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "You must provide the name/icon of the App!")
                 } else {
                     val ctx = act.applicationContext
                     val appsInterface = AppsInterface(ctx)
-                    val status = appsInterface.addApp(args[1])
+                    val status = appsInterface.addApp(args[1], args[2])
                     Log.d("AppsRequest", status)
                 }
             } "apps:removeApp" -> {
@@ -277,6 +281,15 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 val status = appsInterface.removeApp(args[1])
                 Log.d("AppsRequest", status)
             }
+            } "apps:updateApp" -> {
+                if (args.size < 4 || args[1] == "" || args[2] == "" || args[3] == "") {
+                    Log.d("AppsRequest", "Required: App name, file name, file content!")
+                } else {
+                    val ctx = act.applicationContext
+                    val appsInterface = AppsInterface(ctx)
+                    val status = appsInterface.updateApp(args[1], args[2], args[3])
+                    Log.d("AppsRequest", status)
+                }
             }
             else -> {
                 Log.d("onFrontendRequest", "unknown")
