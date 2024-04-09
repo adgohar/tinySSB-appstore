@@ -290,6 +290,21 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     val status = appsInterface.updateApp(args[1], args[2], args[3])
                     Log.d("AppsRequest", status)
                 }
+            } "apps:loadApp" -> {
+                if (args.size < 2 || args[1] == "") {
+                    Log.d("AppsRequest", "Required: App name!")
+                } else {
+                    val ctx = act.applicationContext
+                    val appsInterface = AppsInterface(ctx)
+                    val appFiles = appsInterface.loadApp(args[1])
+                    val jsFile = appFiles["JS"].toString()
+                    val htmlFile = appFiles["HTML"].toString()
+                    Log.d("AppsRequest", appFiles["Status"].toString())
+                    Log.d("AppsRequest", jsFile)
+                    Log.d("AppsRequest", htmlFile)
+                    eval("loadAppHTML('$htmlFile')")
+                    eval("loadAppJS('$jsFile')")
+                }
             }
             else -> {
                 Log.d("onFrontendRequest", "unknown")
