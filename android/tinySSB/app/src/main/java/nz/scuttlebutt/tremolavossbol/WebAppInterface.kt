@@ -299,11 +299,14 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     val appFiles = appsInterface.loadApp(args[1])
                     val jsFile = appFiles["JS"].toString()
                     val htmlFile = appFiles["HTML"].toString()
+                    val cssFile = appFiles["CSS"].toString()
                     Log.d("AppsRequest", appFiles["Status"].toString())
                     Log.d("AppsRequest", jsFile)
                     Log.d("AppsRequest", htmlFile)
+                    Log.d("AppsRequest", cssFile)
                     eval("loadAppHTML('$htmlFile')")
                     eval("loadAppJS('$jsFile')")
+                    eval("loadAppCSS('$cssFile')")
                 }
             }
             else -> {
