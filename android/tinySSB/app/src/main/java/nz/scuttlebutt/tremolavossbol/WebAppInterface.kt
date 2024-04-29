@@ -333,6 +333,13 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                         developerInterface.insertAssetIntoAppFeed(args[1], fileAsByteArray)
                     }
                 }
+            } "apps:InsertReleaseIntoFeed" -> {
+                if (args.size < 4 || args[1] == "" || args[2] == "" || args[3] == "") {
+                    Log.d("AppsRequest", "Required: feed ID, version Nr, comment!")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.insertReleaseIntoAppFeed(args[1], args[2], args[3])
+                }
             } else -> {
                 Log.d("onFrontendRequest", "unknown")
             }

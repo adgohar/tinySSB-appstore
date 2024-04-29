@@ -46,19 +46,39 @@ class AppDevInterface(val act: MainActivity) {
         val r = act.tinyRepo.fid2replica(fid)
         val content = r?.read_content(sequence.toInt())
         if (content != null) {
-            Log.d("Packet (non-edited)", content.toHex())
             try {
-                // Decode the packet using Bipf
                 val decodedPkt = Bipf.decode(content)
                 if (decodedPkt != null) {
                     if (decodedPkt.typ == 4) { //If packet is a list
-                        val readablePkt = if (decodedPkt != null) decodedPkt.get().toString() else "Error decoding packet"
-                        if (Bipf.decodeListElement(decodedPkt, 0) == "APP") {
-                            Log.d("Read Packet", readablePkt)
-                        } else if (Bipf.decodeListElement(decodedPkt, 0) == "A") {
-                            val asset = Bipf.decodeListElement(decodedPkt, 1)
-                            if (asset is ByteArray)
-                                Log.d("APP Requested Asset", asset.toHex())
+                        val readablePkt = decodedPkt?.get()?.toString() ?: "Error decoding packet"
+                        val pktType = Bipf.decodeListElement(decodedPkt, 0)
+
+                        Log.d("Read Packet", readablePkt)
+
+                        when (pktType) {
+                            "APP" -> {
+                                // App entry
+                            }
+                            "A" -> {
+                                //Asset entry
+                                val asset = Bipf.decodeListElement(decodedPkt, 1)
+                                if (asset is ByteArray) {
+                                    Log.d("APP Requested Asset", asset.toHex())
+                                }
+                            }
+                            "R" -> {
+                                // Release entry
+                                val dict = Bipf.decodeListElement(decodedPkt, 1) as? Map<*, *>
+                                if (dict != null) {
+                                    val version = dict["version"]
+                                    val assets = dict["assets"] as? Map<*, *>
+                                    val comment = dict["comment"] as? String
+                                    Log.d("Release Dictionary", dict.toString())
+                                    if (comment != null) {
+                                        Log.d("Release Comment", comment)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -69,7 +89,7 @@ class AppDevInterface(val act: MainActivity) {
         }
     }
 
-    fun updateAppKeys(publicKey: ByteArray, privateKey: ByteArray) {
+    private fun updateAppKeys(publicKey: ByteArray, privateKey: ByteArray) {
         //Dictionary with App Public Key as key and App private key as value
         val ctx = act.applicationContext
         val publicKeyHex = publicKey.toHex()
@@ -150,8 +170,32 @@ class AppDevInterface(val act: MainActivity) {
         }
     }
 
-    fun insertReleaseIntoAppFeed() {
+    fun insertReleaseIntoAppFeed(fid: String, version: String, comment: String) {
         //TODO
+        if (getAppPrivateKey(fid) == null) {
+            Log.d("App Insert Error", "Public Key not valid")
+        } else {
+            val appInsertList = ArrayList<Any>()
+            appInsertList.add(Bipf.mkString("R"))
+            val releaseDictionary = Bipf.mkDict()
+            Bipf.dict_append(releaseDictionary, Bipf.mkString("version"), Bipf.mkString(version))
+            val assetsDictionary = Bipf.mkDict()
+            Bipf.dict_append(assetsDictionary, Bipf.mkString("AppSecrets.json"), Bipf.mkInt(2))
+            Bipf.dict_append(releaseDictionary, Bipf.mkString("assets"), assetsDictionary)
+            Bipf.dict_append(releaseDictionary, Bipf.mkString("comment"), Bipf.mkString(comment))
+
+            appInsertList.add(releaseDictionary)
+            val bipfInsertList = Bipf.mkList(appInsertList)
+            val encodedInsertList = Bipf.encode(bipfInsertList)
+            val r = act.tinyRepo.fid2replica(fid.decodeHex())
+            val lastSeq = r?.state?.max_seq
+            if (encodedInsertList != null) {
+                Log.d("ENCODED LIST BIPF", encodedInsertList.toHex())
+                if (r != null) {
+                    getAppPrivateKey(fid)?.let { r.write(encodedInsertList, it.decodeHex()) }
+                }
+            }
+        }
     }
 
     fun restoreVersion() {
