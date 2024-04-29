@@ -21,6 +21,7 @@ import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_LIST
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_IAM
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_TEXTANDVOICE
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_KANBAN
+import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toBase64
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONArray
@@ -308,8 +309,41 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     eval("loadAppJS('$jsFile')")
                     eval("loadAppCSS('$cssFile')")
                 }
-            }
-            else -> {
+            } "apps:listAppFeeds" -> {
+                val developerInterface = AppDevInterface(act)
+                developerInterface.getAllAppFeeds()
+            } "apps:createApp" -> {
+                if (args.size <3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: App Name and Description")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.createAppFeed(args[1], args[2])
+                }
+            } "apps:readFromFeed" -> {
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: Sequence Number and feed ID!")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.readFromFeed(args[1], args[2].toInt())
+                }
+            } "apps:InsertAssetIntoFeed" -> {
+                if (args.size < 2 || args[1] == "") {
+                    Log.d("AppsRequest", "Required: feed ID!")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    val fileAsByteArray = developerInterface.fileToByteArray("AppSecrets.json")
+                    if (fileAsByteArray != null) {
+                        developerInterface.insertAssetIntoAppFeed(args[1], fileAsByteArray)
+                    }
+                }
+            } "apps:InsertReleaseIntoFeed" -> {
+                if (args.size < 4 || args[1] == "" || args[2] == "" || args[3] == "") {
+                    Log.d("AppsRequest", "Required: feed ID, version Nr, comment!")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.insertReleaseIntoAppFeed(args[1], args[2], args[3])
+                }
+            } else -> {
                 Log.d("onFrontendRequest", "unknown")
             }
         }

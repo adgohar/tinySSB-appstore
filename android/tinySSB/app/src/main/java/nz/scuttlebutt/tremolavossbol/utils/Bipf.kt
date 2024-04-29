@@ -14,9 +14,7 @@ import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_LIST
 import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_RESERVED
 import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_STRING
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toBase64
-import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONArray
-import org.json.JSONObject
 
 class Bipf_e(t: Int) {
     var typ: Int = t
@@ -467,6 +465,17 @@ class Bipf {
         fun bipf_loads(buf: ByteArray): Bipf_e? {
             val (e,len) = decode(buf, 0, buf.size)
             return e
+        }
+
+        @JvmStatic
+        fun decodeListElement(list: Bipf_e, index: Int): Any? {
+            Log.d("Bipf Type", list.typ.toString())
+            if (list.typ == 4) {
+                val arrayList = list.getList()
+                return arrayList[index]
+            } else {
+                return "Not Found"
+            }
         }
 
         @JvmStatic
