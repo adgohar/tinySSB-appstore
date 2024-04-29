@@ -21,6 +21,7 @@ import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_LIST
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_IAM
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_TEXTANDVOICE
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_KANBAN
+import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toBase64
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONArray
@@ -305,7 +306,28 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     eval("loadAppHTML('$htmlFile')")
                     eval("loadAppJS('$jsFile')")
                 }
+            } "apps:listFeedsID" -> {
+                val feeds = act.tinyRepo.listFeeds();
+                val feedList = ArrayList<String>();
+                for (feed in feeds) {
+                    feedList.add(feed.toHex())
+                }
+                Log.d("AppsFeedRequest", feedList.toString())
+            } "apps:createApp" -> {
+                if (args.size <3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: App Name and Description")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.createAppFeed(args[1], args[2])
+                }
+            } "apps:readFromFeed" -> {
+            if (args.size < 3 || args[1] == "" || args[2] == "") {
+                Log.d("AppsRequest", "Required: Sequence Number and feed ID!")
+            } else {
+                val developerInterface = AppDevInterface(act)
+                developerInterface.readFromFeed(args[1], args[2].toInt())
             }
+        }
             else -> {
                 Log.d("onFrontendRequest", "unknown")
             }

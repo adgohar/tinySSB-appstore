@@ -13,6 +13,7 @@ import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.HASH_LEN
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.PKTTYPE_chain20
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.PKTTYPE_plain48
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_PKT_LEN
+import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toByteArray
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import java.io.File
@@ -402,7 +403,7 @@ class Replica(val context: MainActivity, val datapath: File, val fid: ByteArray)
         return seq
     }
 
-    fun write(c: ByteArray): Int {
+    fun write(c: ByteArray, privateKey: ByteArray = context.idStore.identity.signingKey!!): Int {
         var content = c
         if(log.length().toInt() != state.max_pos)
             return -1//
@@ -433,7 +434,7 @@ class Replica(val context: MainActivity, val datapath: File, val fid: ByteArray)
 
         Log.d("replica write", "dmx is ${dmx.toHex()}, chnk_cnt: ${chunks.size}")
         val msg = dmx + ByteArray(1) { PKTTYPE_chain20.toByte()} + payload
-        var wire = msg + signDetached(nam + msg, context.idStore.identity.signingKey!!)
+        var wire = msg + signDetached(nam + msg, privateKey)
         if(wire.size != TINYSSB_PKT_LEN)
             return -1
         if(!verifySignDetached(
