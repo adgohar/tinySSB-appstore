@@ -263,8 +263,7 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 Log.d("AppsRequest", "Apps: $appNames")
                 Log.d("AppsRequest", "Apps: $appIcons")
                 eval("listApps('$appNames', '$appIcons')")
-            }
-            "apps:addApp" -> {
+            } "apps:addApp" -> {
                 if (args.size < 3 || args[1] == "" || args[2] == "") {
                     Log.d("AppsRequest", "You must provide the name/icon of the App!")
                 } else {
@@ -307,8 +306,20 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     eval("loadAppJS('$jsFile')")
                 }
             } "apps:listAppFeeds" -> {
-                val developerInterface = AppDevInterface(act)
-                developerInterface.getAllAppFeeds()
+                val manageAppsInterface = ManageAppsInterface(act)
+                val appFeeds = manageAppsInterface.getAllAppFeeds()
+                eval("listAppFeeds('$appFeeds')")
+            } "apps:listAppReleases" -> {
+                if (args.size < 2 || args[1] == "") {
+                    Log.d("AppsRequest", "Required: App Feed ID")
+                } else {
+                    val manageAppsInterface = ManageAppsInterface(act)
+                    val appReleases = manageAppsInterface.getAppReleases(args[1])
+                    Log.d("ListApp", "listAppReleases('$appReleases')")
+                    eval("listAppReleases('$appReleases')")
+                }
+
+
             } "apps:createApp" -> {
                 if (args.size <3 || args[1] == "" || args[2] == "") {
                     Log.d("AppsRequest", "Required: App Name and Description")
@@ -320,20 +331,29 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 if (args.size < 3 || args[1] == "" || args[2] == "") {
                     Log.d("AppsRequest", "Required: Sequence Number and feed ID!")
                 } else {
-                    val developerInterface = AppDevInterface(act)
-                    developerInterface.readFromFeed(args[1], args[2].toInt())
+                    val manageAppsInterface = ManageAppsInterface(act)
+                    manageAppsInterface.readFromFeed(args[1], args[2].toInt())
                 }
-            } "apps:InsertAssetIntoFeed" -> {
-                if (args.size < 2 || args[1] == "") {
-                    Log.d("AppsRequest", "Required: feed ID!")
+            } "apps:activateRelease" -> {
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: feed ID and release number!")
+                } else {
+                    val manageAppsInterface = ManageAppsInterface(act)
+                    manageAppsInterface.activateRelease(args[1], args[2])
+                }
+            }
+
+            "apps:insertAssetIntoFeed" -> {
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: feed ID and asset name!")
                 } else {
                     val developerInterface = AppDevInterface(act)
-                    val fileAsByteArray = developerInterface.fileToByteArray("AppSecrets.json")
+                    val fileAsByteArray = developerInterface.fileToByteArray(args[2])
                     if (fileAsByteArray != null) {
                         developerInterface.insertAssetIntoAppFeed(args[1], fileAsByteArray)
                     }
                 }
-            } "apps:InsertReleaseIntoFeed" -> {
+            } "apps:insertReleaseIntoFeed" -> {
                 if (args.size < 4 || args[1] == "" || args[2] == "" || args[3] == "") {
                     Log.d("AppsRequest", "Required: feed ID, version Nr, comment!")
                 } else {

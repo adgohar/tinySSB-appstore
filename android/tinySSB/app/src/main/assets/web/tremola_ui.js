@@ -24,6 +24,8 @@ var scenarioDisplay = {
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
     'apps': ['div:qr', 'core', 'lst:apps', 'div:footer', 'plus'],
+    'appsConfig': ['div:back', 'core', 'lst:appsConfig', 'div:footer'],
+    'appSettings': ['div:back', 'core', 'lst:appSettings', 'div:footer'],
     'game': ['div:back', 'core', 'lst:appScreen']
 }
 
@@ -103,7 +105,7 @@ function onBackPressed() {
             document.getElementById('div:settings').style.display = 'none';
             document.getElementById('core').style.display = null;
             document.getElementById('div:footer').style.display = null;
-        }
+        } else if (curr_scenario)
         setScenario(prev_scenario);
     }
 }
@@ -182,8 +184,15 @@ function setScenario(s) {
             document.getElementById('appScreen').style.display = 'block';
         } else {
             document.getElementById('appScreen').style.display = 'none'
+        } if (s == 'appsConfig') {
+            document.getElementById('lst:appsConfig').style.display = 'block';
+        } else {
+            document.getElementById('lst:appsConfig').style.display = 'none';
+        } if (s == 'appSettings') {
+            document.getElementById('lst:appSettings').style.display = 'block';
+        } else {
+            document.getElementById('lst:appSettings').style.display = 'none';
         }
-
     }
 }
 

@@ -34,7 +34,8 @@ class AppsInterface (context: Context) {
                 for (appFolder in appFolders) {
                     if (appFolder.isDirectory) {
                         val iconFile = File(appFolder, "icon.png") //icon always named so
-                        val appName = appFolder.name
+                        val appFolderName = appFolder.name.split(";")
+                        val appName = appFolderName[1]
                         var iconBase64: String
 
                         if (iconFile.exists()) {

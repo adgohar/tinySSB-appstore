@@ -23,7 +23,6 @@ class AppDevInterface(val act: MainActivity) {
         val AppCreateList = ArrayList<Any>()
         AppCreateList.add(Bipf.mkString("APP"))
         AppCreateList.add(Bipf.mkBytes(fid))
-        AppCreateList.add(Bipf.mkString("C"))
         AppCreateList.add(Bipf.mkString(appName))
         AppCreateList.add(Bipf.mkString(appDesc))
         val bipfCreateList = Bipf.mkList(AppCreateList)
@@ -37,54 +36,6 @@ class AppDevInterface(val act: MainActivity) {
             if (r != null) {
                 val attempt = r.write(encodedCreateList, signingKey)
                 Log.d("Attempt", attempt.toString())
-            }
-        }
-    }
-
-    fun readFromFeed(fid: String, sequence: Int) {
-        val fid = fid.decodeHex()
-        val r = act.tinyRepo.fid2replica(fid)
-        val content = r?.read_content(sequence.toInt())
-        if (content != null) {
-            try {
-                val decodedPkt = Bipf.decode(content)
-                if (decodedPkt != null) {
-                    if (decodedPkt.typ == 4) { //If packet is a list
-                        val readablePkt = decodedPkt?.get()?.toString() ?: "Error decoding packet"
-                        val pktType = Bipf.decodeListElement(decodedPkt, 0)
-
-                        Log.d("Read Packet", readablePkt)
-
-                        when (pktType) {
-                            "APP" -> {
-                                // App entry
-                            }
-                            "A" -> {
-                                //Asset entry
-                                val asset = Bipf.decodeListElement(decodedPkt, 1)
-                                if (asset is ByteArray) {
-                                    Log.d("APP Requested Asset", asset.toHex())
-                                }
-                            }
-                            "R" -> {
-                                // Release entry
-                                val dict = Bipf.decodeListElement(decodedPkt, 1) as? Map<*, *>
-                                if (dict != null) {
-                                    val version = dict["version"]
-                                    val assets = dict["assets"] as? Map<*, *>
-                                    val comment = dict["comment"] as? String
-                                    Log.d("Release Dictionary", dict.toString())
-                                    if (comment != null) {
-                                        Log.d("Release Comment", comment)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            } catch (e: Exception) {
-                Log.d("Packet Error", "Error decoding packet: ${e.message}")
             }
         }
     }
@@ -108,26 +59,6 @@ class AppDevInterface(val act: MainActivity) {
         json.put(publicKeyHex, privateKeyHex)
 
         file.writeText(json.toString())
-    }
-
-    fun getAllAppFeeds() {
-        val feeds = act.tinyRepo.listFeeds()
-        val feedList = ArrayList<String>()
-        val appList = ArrayList<String>()
-        for (feed in feeds) {
-            try {
-                val r = act.tinyRepo.fid2replica(feed)
-                val firstEntry = r?.read_content(1)
-                if (firstEntry?.let { Bipf.decode(it)?.let { Bipf.decodeListElement(it, 0) } } == "APP") {
-                    feedList.add(feed.toHex())
-                    Bipf.decode(firstEntry)
-                        ?.let { Bipf.decodeListElement(it, 2).toString() }?.let { appList.add(it) }
-                }
-            } catch (e: Exception) {
-                Log.d("Feed Exception", "Could not read feed" + feed.toHex())
-            }
-        }
-        Log.d("AppsFeedRequest", appList.toString())
     }
 
     fun getAppPrivateKey(fid: String): String? {
@@ -171,7 +102,7 @@ class AppDevInterface(val act: MainActivity) {
     }
 
     fun insertReleaseIntoAppFeed(fid: String, version: String, comment: String) {
-        //TODO
+        //TODO: make it take assets as a list
         if (getAppPrivateKey(fid) == null) {
             Log.d("App Insert Error", "Public Key not valid")
         } else {
@@ -180,7 +111,7 @@ class AppDevInterface(val act: MainActivity) {
             val releaseDictionary = Bipf.mkDict()
             Bipf.dict_append(releaseDictionary, Bipf.mkString("version"), Bipf.mkString(version))
             val assetsDictionary = Bipf.mkDict()
-            Bipf.dict_append(assetsDictionary, Bipf.mkString("AppSecrets.json"), Bipf.mkInt(2))
+            Bipf.dict_append(assetsDictionary, Bipf.mkString("icon.png"), Bipf.mkInt(3))
             Bipf.dict_append(releaseDictionary, Bipf.mkString("assets"), assetsDictionary)
             Bipf.dict_append(releaseDictionary, Bipf.mkString("comment"), Bipf.mkString(comment))
 
