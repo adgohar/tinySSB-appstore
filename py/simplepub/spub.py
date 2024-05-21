@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 import websockets
+import platform
 
 WS_PORT = 8080
 
@@ -80,9 +81,10 @@ async def onConnect(sock, node, args):
 async def main(args):
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
-    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+    if platform.system() != 'Windows':
+        loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
-    node = simplepub.node.PubNode(args.d, args.role, args.v)
+    node = simplepub.node.PubNode(args.data, args.role, args.v)
 
     try:
         if type(args.uri_or_port) == int:
