@@ -10,6 +10,7 @@
 import os
 
 import spub
+import platform
 from simplepub import bipf, replica
 
 def shortname(buf):
@@ -311,8 +312,10 @@ class MyDisplay(): # Display):
     def format_and_add_txt(self, post, nr):
         shortname,txt,ts = post
         _,c = self.lstscr.getmaxyx()
-
-        t = time.strftime(' ⏲ %Y-%m-%d %H:%M:%S ', time.localtime(ts))
+        if platform.system() != 'Windows':
+            t = time.strftime(' ⏲ %Y-%m-%d %H:%M:%S ', time.localtime(ts))
+        else:
+            t = time.strftime(' %Y-%m-%d %H:%M:%S ', time.localtime(ts))
         txt = f"#{nr} [{shortname[:5]}-{shortname[5:]}]\n{txt}\n{'_' + ' ' * (c-len(t)-3)}{t}"
         block = self.post2block(txt)
         self.blocks.append(block)

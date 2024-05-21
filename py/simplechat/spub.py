@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 import websockets
+import platform
 
 WS_PORT = 8080
 
@@ -90,7 +91,8 @@ async def main(args, full_cb=None):
 
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
-    loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+    if platform.system() != 'Windows':
+        loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
     the_node = simplepub.node.PubNode(args.data, args.role, args.v, args.log, full_cb)
 
