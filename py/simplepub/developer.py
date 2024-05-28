@@ -1,7 +1,7 @@
 import sys
 import json
 import os
-from pure25519 import SigningKey, VerifyingKey, create_keypair
+from pure25519 import SigningKey, VerifyingKey, create_keypair, open as open25519
 from simplepub import bipf, replica
 from simplepub.bipf import _dec_list
 
@@ -12,7 +12,8 @@ def test():
     print("This is the test function from the developer.py file")
 
 def verify_fct(fid, signature, message):
-    return True  # Dummy verification function
+    print(f"Verifying {signature} {message}")
+    return (open25519(signature + message, fid) != None)  #wichtig
 
 def getFeedID(appName: str):
     #go through all folders in the data directory and for each folder get the first entry
