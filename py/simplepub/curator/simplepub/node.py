@@ -56,17 +56,7 @@ class PubNode:
             print("gset dmx", self.goset.goset_dmx.hex())
             print("want dmx", '-' if self.want_dmx == None else self.want_dmx.hex())
             print("chnk dmx", '-' if self.chnk_dmx == None else self.chnk_dmx.hex())
-        if role != 'out': # 'in' or 'inout': listen to req
-            for ndx in range(len(self.goset.keys)):
-                fid = self.goset.keys[ndx]
-                seq = self.reps[fid].state['max_seq'] + 1
-                nam = fid + seq.to_bytes(4, 'big') + self.reps[fid].state['prev']
-                dmx = self.compute_dmx(nam)
-                self.arm_dmx(dmx, self.in_entry, (fid, seq), f"{ndx}.{seq}")
-                for seq,p in self.reps[fid].state['pend_sc'].items():
-                    # print(p)
-                    cnr = p[0]
-                    self.arm_chk(p[2], self.in_chunk, (fid,seq,cnr), f"{ndx}.{seq}.{cnr}")
+
         # print(f"len of chkt is {len(self.chkt)}")
         self.rtt = 4          # sec
         self.last_e_adv = 0   # timestamp
@@ -133,6 +123,7 @@ class PubNode:
         # print(f"<< incoming {pkt[:20].hex()}.. ({len(pkt)}B)")
         lst = []
         dmx = pkt[:7] # DMX_LEN = 7
+        print("dmx hex: " + dmx.hex())
 
         if dmx in self.dmxt:
             # if not dmx in [self.want_dmx,self.chnk_dmx,self.goset.goset_dmx]:
@@ -215,6 +206,13 @@ class PubNode:
         #    RTT = 0.8*RTT + 0.2*(time.time() - LAST_E_ADV)
         #    if RTT < 0.1: RTT = 0.1
         fid, seq = self.dmxt[dmx][1]
+
+        # Ensure the feed is in the goset before processing
+        if fid not in self.goset.keys:
+            if self.verbose:
+                print(f"   feed {fid.hex()} not in goset, ignoring entry")
+            return []
+
         ndx = self.goset._key_to_ndx(fid)
         try:
             c = f" /{self.dmxt[dmx][2]}"

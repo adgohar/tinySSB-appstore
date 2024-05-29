@@ -1,12 +1,17 @@
+import asyncio
+import json
+import os
 import developer as dev
 import developerCurator as devCurator
+import devpub as devpub
 import sys
+
 
 if __name__ == "__main__":
     import argparse
 
     ap = argparse.ArgumentParser()
-    ap.add_argument('-command', choices=['commit', 'download', 'showReleases', 'setActiveRelease', 'getActiveRelease', 'end', 'status', 'update', 'generateCurator', 'showCuratorList'], required=True,
+    ap.add_argument('-command', choices=['commit', 'download', 'showReleases', 'setActiveRelease', 'getActiveRelease', 'end', 'status', 'updateCurator', 'generateCurator', 'showCuratorList', 'sendCurator', 'receiveCurator'], required=True,
                     help='Command to execute')
     ap.add_argument('-path', type=str,
                     help='Path to the app folder')
@@ -16,7 +21,14 @@ if __name__ == "__main__":
                     help='Comment for the commit')
     ap.add_argument('-name', type=str,
                     help='Name of the app')
-    
+    ap.add_argument('-data', type=str, default='./data', metavar='DATAPATH',
+                    help='path to persistency directory (default: ./data)')
+    ap.add_argument('senduri', type=str, nargs='?',
+                    default='ws://127.0.0.1:8081',
+                    help='TCP port if responder, URI if intiator (default is ws://127.0.0.1:8081)')
+    ap.add_argument('receiveuri', type=str, nargs='?',
+                    default='ws://127.0.0.1:8080',
+                    help='TCP port if responder, URI if intiator (default is ws://127.0.0.1:8080)')
     args = ap.parse_args()
 
     if args.command == None:
@@ -67,16 +79,17 @@ if __name__ == "__main__":
         print(dev.getAppStatus(args.name))
     elif args.command == "generateCurator":
         devCurator.generateCuratorFeed()
-    elif args.command == "update":
+    elif args.command == "updateCurator":
         if args.name == None:
             print("Missing argument: name")
             sys.exit()
         #ask for category they want to update
-        category = input("Enter the number of the category you would like to update: ")
         print("1. Description")
         print("2. Category")
         print("3. Age Rating")
         print("4. Rating")
+        category = input("Enter the number of the category you would like to update: ")
+        
 
         if category == "1":
             #ask for new description
@@ -101,6 +114,31 @@ if __name__ == "__main__":
         curatorList = devCurator.showCuratorList()
         for curator in curatorList:
             print(curator)
+    elif args.command == "sendCurator":
+        if args.senduri == None or args.data == None:
+            print("Missing argument: senduri or data")
+            sys.exit()
+        else:
+            #get the curator feed from the devCurator.json file
+            file_path = "devCurator.json"
+            data = {}
 
+            if os.path.exists(file_path):
+                with open(file_path, "r") as file:
+                    try:
+                        data = json.load(file)
+                    except json.JSONDecodeError:
+                        data = {}
 
-        
+            curatorfid = data.get("fid")
+
+            curatorFidBytes = bytes.fromhex(curatorfid)
+
+            asyncio.run(devpub.main(args.data, curatorFidBytes, args.senduri))
+
+    elif args.command == "receiveCurator":
+        if args.receiveuri == None or args.data == None:
+            print("Missing argument: receiveuri or data")
+            sys.exit()
+        else:
+            asyncio.run(devpub.receiveCurator(args.data, args.receiveuri))

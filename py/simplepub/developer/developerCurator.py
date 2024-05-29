@@ -28,7 +28,7 @@ def generateCuratorFeed():
 
             firstElementStr = decodedElements[0]
 
-            if firstElementStr == "CuratorFeed":
+            if firstElementStr == "DevCuratorFeed":
                 curatorfid = fid
                 break
             else:
@@ -44,8 +44,8 @@ def insertAppsIntoCuratorFeed():
     # [DevApp, AppFeedID, AppName, AppDesc, DeveloperID, Status, Details]
     # where developer id would be the curator feed id and details is an empty json string
     
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
+    #get the curator feed from the devCurator.json file
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -56,7 +56,7 @@ def insertAppsIntoCuratorFeed():
                 data = {}
 
     curatorfid = data.get("fid")
-    #get private key from the curator.json file
+    #get private key from the devCurator.json file
     curatorPrivateKey = data.get(curatorfid)
     
     curatorFidBytes = bytes.fromhex(curatorfid)
@@ -111,23 +111,22 @@ def insertAppsIntoCuratorFeed():
             else:
                 pass
 
-def showCuratorList():
+def showCuratorList(curatorfid: str = None):
     #loop through all apps and return them as a list
-        
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
-    data = {}
 
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                data = {}
+    if curatorfid is None:        
+        #get the curator feed from the devCurator.json file
+        file_path = "devCurator.json"
+        data = {}
 
-    curatorfid = data.get("fid")
-    #get private key from the curator.json file
-    curatorPrivateKey = data.get(curatorfid)
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+
+        curatorfid = data.get("fid")
 
     curatorFidBytes = bytes.fromhex(curatorfid)
     r = replica.Replica("./data", curatorFidBytes, dev.verify_fct)
@@ -162,20 +161,22 @@ def showCuratorList():
             pass
     return appList
 
-def getAppFromCurator(appNameSearch: str):
+def getAppFromCurator(appNameSearch: str, curatorfid: str = None):
 
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
-    data = {}
+    if curatorfid is None:
 
-    if os.path.exists(file_path):
-        with open(file_path, "r") as file:
-            try:
-                data = json.load(file)
-            except json.JSONDecodeError:
-                data = {}
+        #get the curator feed from the devCurator.json file
+        file_path = "devCurator.json"
+        data = {}
 
-    curatorfid = data.get("fid")
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+
+        curatorfid = data.get("fid")
 
     r = replica.Replica("./data", bytes.fromhex(curatorfid), dev.verify_fct)
     lastSeq = r.state['max_seq']
@@ -232,8 +233,8 @@ def updateRating(appNameSearch: str, newRating: str):
     updateAppDetails(appNameSearch, newAppDetails)
 
 def updateAppDetails(appNameSearch: str, newDetails: str):
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
+    #get the curator feed from the devCurator.json file
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -244,7 +245,7 @@ def updateAppDetails(appNameSearch: str, newDetails: str):
                 data = {}
 
     curatorfid = data.get("fid")
-    #get private key from the curator.json file
+    #get private key from the devCurator.json file
     curatorPrivateKey = data.get(curatorfid)
     
     curatorFidBytes = bytes.fromhex(curatorfid)
@@ -295,8 +296,8 @@ def updateAppDetails(appNameSearch: str, newDetails: str):
 
 def updateAppDesc(appNameSearch: str, newDesc: str):
 
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
+    #get the curator feed from the devCurator.json file
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -307,7 +308,7 @@ def updateAppDesc(appNameSearch: str, newDesc: str):
                 data = {}
 
     curatorfid = data.get("fid")
-    #get private key from the curator.json file
+    #get private key from the devCurator.json file
     curatorPrivateKey = data.get(curatorfid)
     
     curatorFidBytes = bytes.fromhex(curatorfid)
@@ -359,8 +360,8 @@ def updateAppDesc(appNameSearch: str, newDesc: str):
 
 def updateAppStatus(appNameSearch: str, newStatus: str):
 
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
+    #get the curator feed from the devCurator.json file
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -371,7 +372,7 @@ def updateAppStatus(appNameSearch: str, newStatus: str):
                 data = {}
 
     curatorfid = data.get("fid")
-    #get private key from the curator.json file
+    #get private key from the devCurator.json file
     curatorPrivateKey = data.get(curatorfid)
     
     curatorFidBytes = bytes.fromhex(curatorfid)
@@ -423,8 +424,8 @@ def updateAppStatus(appNameSearch: str, newStatus: str):
 
 def readCuratorFeed(seq: str):
     
-    #get the curator feed from the curator.json file
-    file_path = "curator.json"
+    #get the curator feed from the devCurator.json file
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -476,8 +477,8 @@ def createCuratorFeed():
     verifyKey = keypair[1]
     fid = verifyKey.vk_s
 
-    #check if a keypaid exists in curator.json
-    file_path = "curator.json"
+    #check if a keypaid exists in devCurator.json
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
@@ -503,11 +504,11 @@ def createCuratorFeed():
     
     # Create the list to be encoded
     curatorList = [
-        bipf.dumps("CuratorFeed"),
+        bipf.dumps("DevCuratorFeed"),
         bipf.dumps(fid),
     ]
 
-    file_path = "curator.json"
+    file_path = "devCurator.json"
     data = {}
 
     if os.path.exists(file_path):
