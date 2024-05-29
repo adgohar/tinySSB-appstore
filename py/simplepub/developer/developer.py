@@ -199,8 +199,14 @@ def commitApp(appName: str, appPath: str, version: str, comment: str):
     else:
         #map the sequence of each file to the file name
         files = {}
+        for file in os.listdir(appPath):
+            #if file size is bigger than 100KB, return an error
+            if os.path.getsize(os.path.join(appPath, file)) > 100000:
+                print(f"File {file} is too big, max size is 100KB. Edit and try again")
+                return None
         #loop through each file in the appPath and insert it into the app feed
         for file in os.listdir(appPath):
+            #if file size is bigger than 100KB, return an error
             seq = insertAssetIntoAppFeed(fid, os.path.join(appPath, file))
             files[file] = seq
             print(f"File {file} inserted at sequence {seq}")
