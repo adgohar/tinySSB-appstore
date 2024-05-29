@@ -216,6 +216,22 @@ def updateCategory(appNameSearch: str, newCategory: str):
     newAppDetails = json.dumps(appDetailsJson)
     updateAppDetails(appNameSearch, newAppDetails)
 
+def updateAppSize(appNameSearch: str, newSize: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["size"] = newSize
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+def updateAppUrl(appNameSearch: str, newUrl: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["url"] = newUrl
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
 def updateAgeRating(appNameSearch: str, newAgeRating: str):
     #get app details
     appDetails = getAppFromCurator(appNameSearch)[6]

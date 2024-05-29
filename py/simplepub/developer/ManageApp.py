@@ -88,6 +88,8 @@ if __name__ == "__main__":
         print("2. Category")
         print("3. Age Rating")
         print("4. Rating")
+        print("5. Size")
+        print("6. Url")
         category = input("Enter the number of the category you would like to update: ")
         
 
@@ -107,6 +109,14 @@ if __name__ == "__main__":
             #ask for new rating
             rating = input("Enter the new rating: ")
             devCurator.updateRating(args.name, rating)
+        elif category == "5":
+            #ask for new Size
+            size = input("Enter the new size: ")
+            devCurator.updateSize(args.name, size)
+        elif category == "6":
+            #ask for new url
+            url = input("Enter the new url: ")
+            devCurator.updateUrl(args.name, url)
         else:
             print("Invalid category number")
             sys.exit()
