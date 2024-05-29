@@ -115,8 +115,9 @@ if __name__ == "__main__":
             devCurator.updateSize(args.name, size)
         elif category == "6":
             #ask for new url
-            url = input("Enter the new url: ")
-            devCurator.updateUrl(args.name, url)
+            url_input = input("Enter the new url(s) (seperate by a comma if multiple URLs): ")
+            urls = [url.strip() for url in url_input.split(',')]  # Split the input string by commas and strip any extra whitespace
+            devCurator.updateUrl(args.name, urls)
         else:
             print("Invalid category number")
             sys.exit()
