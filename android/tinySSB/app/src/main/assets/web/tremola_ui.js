@@ -176,6 +176,7 @@ function setScenario(s) {
             document.getElementById('lst:apps').style.display = 'initial';
             document.getElementById('core').style.height = 'calc(100%-450px)';
             getApps();
+            loadAppStoreScreen();
         } else {
             document.getElementById('lst:apps').style.display = 'none';
         } if (s == 'game') {
@@ -185,6 +186,11 @@ function setScenario(s) {
         }
 
     }
+}
+
+function loadAppStoreScreen() {
+    getApps();
+    requestCuratorsUI();
 }
 
 function btnBridge(e) {
@@ -269,8 +275,6 @@ function closeOverlay() {
     document.getElementById('btn:item_menu_description_cancel').style.display = 'none'
     document.getElementById('div:debug').style.display = 'none'
     document.getElementById("div:invite_menu").style.display = 'none'
-
-    document.getElementById("appCreationModal").style.display = 'none'
 
     overlayIsActive = false;
 

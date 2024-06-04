@@ -21,7 +21,6 @@ import nz.scuttlebutt.tremolavossbol.utils.Bipf.Companion.BIPF_LIST
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_IAM
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_TEXTANDVOICE
 import nz.scuttlebutt.tremolavossbol.utils.Constants.Companion.TINYSSB_APP_KANBAN
-import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toBase64
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONArray
@@ -312,7 +311,15 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
             } "apps:listAppFeeds" -> {
                 val developerInterface = AppDevInterface(act)
                 developerInterface.getAllAppFeeds()
-            } "apps:createApp" -> {
+            } "apps:listCuratorFeeds" -> {
+                val developerInterface = AppDevInterface(act)
+                val curatorList = developerInterface.getAllCuratorFeeds()
+                Log.d("listCuratorsFinal", curatorList.toString())
+                val curatorListString = curatorList.toString().substring( 1, curatorList.toString().length - 1 )
+                Log.d("curatorString", curatorListString)
+                eval("loadCuratorsUI('$curatorListString')")
+            }
+            "apps:createApp" -> {
                 if (args.size <3 || args[1] == "" || args[2] == "") {
                     Log.d("AppsRequest", "Required: App Name and Description")
                 } else {

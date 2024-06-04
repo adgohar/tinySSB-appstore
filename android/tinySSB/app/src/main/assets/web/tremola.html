@@ -60,22 +60,9 @@
 
   <div id='lst:apps'  class=appStoreDiv style="display: none;">
     <div id='appsHeader' >App Store</div>
-    <div id='appsList'>
+    <div id='curatorList'>
     </div>
-    <div id="appCreationModal" class="modal">
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close" onclick="closeOverlay()">&times;</span>
-        <form id="createAppForm">
-          <label for="appName">App Name:</label>
-          <input type="text" id="appName" name="appName" required>
-
-          <label for="appImage">App Image:</label>
-          <input type="file" id="appImage" name="appImage">
-
-          <button type="button" onclick="submitApp()">Submit</button>
-        </form>
-      </div>
+    <div id='appsList'>
     </div>
   </div>
 

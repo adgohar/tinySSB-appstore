@@ -3,11 +3,12 @@ package nz.scuttlebutt.tremolavossbol
 import android.util.Log
 import nz.scuttlebutt.tremolavossbol.crypto.SodiumAPI
 import nz.scuttlebutt.tremolavossbol.utils.Bipf
+import nz.scuttlebutt.tremolavossbol.utils.Bipf_e
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONObject
 import java.io.File
-import java.nio.file.Files
+import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext.SupertypesPolicy.None
 
 class AppDevInterface(val act: MainActivity) {
 
@@ -118,16 +119,89 @@ class AppDevInterface(val act: MainActivity) {
             try {
                 val r = act.tinyRepo.fid2replica(feed)
                 val firstEntry = r?.read_content(1)
-                if (firstEntry?.let { Bipf.decode(it)?.let { Bipf.decodeListElement(it, 0) } } == "APP") {
-                    feedList.add(feed.toHex())
-                    Bipf.decode(firstEntry)
-                        ?.let { Bipf.decodeListElement(it, 2).toString() }?.let { appList.add(it) }
+                val firstEntryType = firstEntry?.let { getFromEntry(it, 0) }
+                if (firstEntryType == "APP") {
+                    appList.add(getFromEntry(firstEntry, 2).toString())
+                    val listOfApps = listCuratorApps(feed.toHex());
+                    Log.d("listApps", listOfApps.toString())
+
                 }
+
             } catch (e: Exception) {
                 Log.d("Feed Exception", "Could not read feed" + feed.toHex())
             }
         }
         Log.d("AppsFeedRequest", appList.toString())
+    }
+
+    fun listCuratorApps(fid: String): ArrayList<String> {
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val appList = ArrayList<String>()
+        val appNameList = ArrayList<String>()
+        val lastSeq = r?.state?.max_seq
+        if (lastSeq != null) {
+            for (i in lastSeq downTo 1) {
+                val entry = r?.read_content(i)
+                val entryType = entry?.let { getFromEntry(it, 0) }
+                if (entryType == "DevApp") {
+                    if (entry is ByteArray) {
+                        val appFeedID = getFromEntry(entry, 1)
+                        val appName = getFromEntry(entry, 2)
+                        val appDesc = getFromEntry(entry, 3)
+                        val developerID = getFromEntry(entry, 4)
+                        val status = getFromEntry(entry, 5)
+                        val details = getFromEntry(entry, 6)
+                        if (!appNameList.contains(appName)) {
+                            appNameList.add(appName.toString())
+                            appList.add(appDesc.toString())
+                        }
+                    }
+                }
+            }
+        }
+        return appNameList
+    }
+
+    fun getAllCuratorFeeds(): ArrayList<String> {
+        val feeds = act.tinyRepo.listFeeds()
+        val curatorList = ArrayList<String>()
+        for (feed in feeds) {
+            try {
+                val r = act.tinyRepo.fid2replica(feed)
+                val firstEntry = r?.read_content(1)
+                val firstEntryType = firstEntry?.let { getFromEntry(it, 0) }
+                if (firstEntryType == "CuratorFeed") {
+                    Log.d("listcuratorsfid", feed.toHex())
+                    val curatorFID = getFromEntry(firstEntry, 1)
+                    if (curatorFID is ByteArray) {
+                        curatorList.add("" + curatorFID.toHex())
+                    }
+                    Log.d("listaCurators", curatorList.toString())
+                }
+            } catch (e: Exception) {
+                Log.d("Feed Exception", "Could not read feed" + feed.toHex())
+            }
+        }
+        return curatorList
+    }
+
+    fun getFromEntry(entry: ByteArray, index: Int): Any? {
+        if (entry != null) {
+            val entry = Bipf.bipf_loads(entry)
+            if (entry != null) {
+                if (entry.get() is ArrayList<*>) {
+                    val first = (entry.get() as ArrayList<*>).get(index)
+                    if (first is ByteArray) {
+                        val firstDecoded = Bipf.decode(first)
+                        if (firstDecoded != null) {
+                            val value = firstDecoded.get()
+                            return value
+                        }
+                    }
+                }
+            }
+        }
+        return null
     }
 
     fun getAppPrivateKey(fid: String): String? {

@@ -53,11 +53,6 @@ function appController() {
     getApps();
 }
 
-function displayAppCreationUI() {
-    document.getElementById("appCreationModal").style.display = "block";
-    overlayIsActive = true;
-}
-
 function getApps() {
     backend("apps:listAppFeeds");
 }
@@ -145,6 +140,55 @@ function loadAppJS(jsBase64) {
 
 function toggleAppScreen() {
     setScenario('game');
+}
+
+function requestCuratorsUI() {
+    backend("apps:listCuratorFeeds")
+}
+
+function loadCuratorsUI(curatorListString) {
+    const curatorListUI = document.getElementById('curatorList')
+
+    const curatorList = curatorListString.split(", ");
+    removeAllCuratorsUI();
+    const curatorString = "Curator"
+    let i = 0;
+    for (const curator of curatorList) {
+
+        addCreatorUI(curator, curatorString + (i+1));
+        i += 1;
+    }
+
+}
+
+function removeAllCuratorsUI() {
+    const curatorListUI = document.getElementById('curatorList');
+    while (curatorListUI.firstChild) {
+        curatorListUI.removeChild(curatorListUI.firstChild);
+    }
+}
+
+function addCreatorUI(curatorID, curatorName) {
+    const curatorListUI = document.getElementById('curatorList');
+
+    const curatorButton = document.createElement('button');
+    curatorButton.style.display = 'flex';
+    curatorButton.id = curatorID
+    curatorButton.style.flexDirection = 'column';
+    curatorButton.style.alignItems = 'center';
+    curatorButton.style.justifyContent = 'center';
+
+    curatorButton.onclick = function () {
+        console.log(curatorButton.id)
+        loadCurator(curatorID);
+    };
+
+    const curatorLabel = document.createElement('span');
+    curatorLabel.textContent = curatorName;
+
+    curatorButton.appendChild(curatorLabel);
+
+    curatorListUI.appendChild(curatorButton);
 }
 
 function createAppUI(appName, appIconBase64) {
