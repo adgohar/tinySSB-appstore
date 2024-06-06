@@ -318,6 +318,24 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 val curatorListString = curatorList.toString().substring( 1, curatorList.toString().length - 1 )
                 Log.d("curatorString", curatorListString)
                 eval("loadCuratorsUI('$curatorListString')")
+            } "apps:listCuratorApps" -> {
+            if (args.size <2 || args[1] == "" ) {
+                Log.d("AppsRequest", "Required: Curator ID")
+            } else {
+                val developerInterface = AppDevInterface(act)
+                val appsListData = developerInterface.listCuratorApps(args[1])
+                val appsList = appsListData.appNameList
+                val appsIDList = appsListData.appFeedIDList
+                val appStatusList = appsListData.statusList
+                Log.d("listAppsFinal", appsList.toString())
+                Log.d("listAppsIdFinal", appsIDList.toString())
+                val appListString = appsList.toString().substring( 1, appsList.toString().length - 1 )
+                val appIDListString = appsIDList.toString().substring( 1, appsIDList.toString().length - 1 )
+                val appStatusListString = appStatusList.toString().substring( 1, appStatusList.toString().length - 1 )
+                Log.d("AppString", appListString)
+                Log.d("AppIDString", appIDListString)
+                eval("loadAppsUI('$appListString', '$appIDListString', '$appStatusListString')")
+            }
             }
             "apps:createApp" -> {
                 if (args.size <3 || args[1] == "" || args[2] == "") {

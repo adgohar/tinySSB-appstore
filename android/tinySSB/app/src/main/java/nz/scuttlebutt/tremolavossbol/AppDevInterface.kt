@@ -10,6 +10,15 @@ import org.json.JSONObject
 import java.io.File
 import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext.SupertypesPolicy.None
 
+data class AppData(
+    val appFeedIDList: ArrayList<String>,
+    val appNameList: ArrayList<String>,
+    val appDescList: ArrayList<String>,
+    val developerIDList: ArrayList<String>,
+    val statusList: ArrayList<String>,
+)
+
+
 class AppDevInterface(val act: MainActivity) {
 
     fun createAppFeed(appName: String, appDesc: String) {
@@ -134,10 +143,38 @@ class AppDevInterface(val act: MainActivity) {
         Log.d("AppsFeedRequest", appList.toString())
     }
 
-    fun listCuratorApps(fid: String): ArrayList<String> {
+    fun getAppStatus(fid: String): Int {
+        //first we check if the app is downloaded (if it exists in appdata), if yes return 1
+        val ctx = act.applicationContext
+        val appsInterface = AppsInterface(ctx)
+
+        if (appsInterface.checkIfAppExists(fid)) {
+            return 1
+        }
+
+        //then we check if the appFeed is present (if it is present in feeds), if yes return 2
+        else {
+            val feeds = act.tinyRepo.listFeeds()
+            for (feed in feeds) {
+                if (feed.toHex() == fid) {
+                    return 2
+                }
+            }
+        }
+
+        //else return -1
+        return -1
+    }
+
+    fun listCuratorApps(fid: String): AppData {
         val r = act.tinyRepo.fid2replica(fid.decodeHex())
-        val appList = ArrayList<String>()
+        var localStatus = -99
         val appNameList = ArrayList<String>()
+        val appFeedIDList = ArrayList<String>()
+        val appDescList = ArrayList<String>()
+        val developerIDList = ArrayList<String>()
+        val statusList = ArrayList<String>()
+        val detailsList = ArrayList<String>()
         val lastSeq = r?.state?.max_seq
         if (lastSeq != null) {
             for (i in lastSeq downTo 1) {
@@ -145,21 +182,49 @@ class AppDevInterface(val act: MainActivity) {
                 val entryType = entry?.let { getFromEntry(it, 0) }
                 if (entryType == "DevApp") {
                     if (entry is ByteArray) {
+                        Log.d("Details AppIdCurator", fid)
                         val appFeedID = getFromEntry(entry, 1)
                         val appName = getFromEntry(entry, 2)
                         val appDesc = getFromEntry(entry, 3)
                         val developerID = getFromEntry(entry, 4)
+                        if (appFeedID is ByteArray) {
+                            localStatus = getAppStatus(appFeedID.toHex())
+                        }
                         val status = getFromEntry(entry, 5)
                         val details = getFromEntry(entry, 6)
+                        Log.d("Details AppIdCurator", details.toString())
                         if (!appNameList.contains(appName)) {
                             appNameList.add(appName.toString())
-                            appList.add(appDesc.toString())
+                            appDescList.add(appDesc.toString())
+                            detailsList.add(details.toString())
+
+                            // Extract URL from JSON string
+                            val jsonObject = JSONObject(details.toString())
+                            var url = ""
+                            if (jsonObject.has("url")) {
+                                url = jsonObject.getString("url")
+                            }
+                            Log.d("URL mofo", url)
+                            if (url != "") {
+                                if (localStatus == -1) {
+                                    localStatus = 3
+                                }
+                            }
+                            statusList.add(localStatus.toString())
+
+                            if (appFeedID is ByteArray) {
+                                appFeedIDList.add(appFeedID.toHex())
+                            }
+                            if (developerID is ByteArray) {
+                                developerIDList.add(developerID.toHex())
+                            }
                         }
                     }
                 }
             }
         }
-        return appNameList
+
+        return AppData(appFeedIDList, appNameList, appDescList, developerIDList, statusList)
     }
 
     fun getAllCuratorFeeds(): ArrayList<String> {

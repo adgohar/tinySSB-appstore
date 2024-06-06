@@ -23,7 +23,8 @@ var scenarioDisplay = {
     'settings': ['div:back', 'div:settings', 'core'],
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
-    'apps': ['div:qr', 'core', 'lst:apps', 'div:footer', 'plus'],
+    'apps': ['div:qr', 'core', 'lst:curators', 'div:footer', 'plus'],
+    'curatorApps': ['div:back', 'core', 'lst:curatorApps', 'div:footer', 'plus'],
     'game': ['div:back', 'core', 'lst:appScreen']
 }
 
@@ -173,16 +174,23 @@ function setScenario(s) {
         }
 
         if (s == 'apps') {
-            document.getElementById('lst:apps').style.display = 'initial';
+            document.getElementById('lst:curators').style.display = 'initial';
             document.getElementById('core').style.height = 'calc(100%-450px)';
             getApps();
             loadAppStoreScreen();
-        } else {
-            document.getElementById('lst:apps').style.display = 'none';
+        }
+
+        else {
+            document.getElementById('lst:curators').style.display = 'none';
         } if (s == 'game') {
             document.getElementById('appScreen').style.display = 'block';
         } else {
             document.getElementById('appScreen').style.display = 'none'
+        }
+        if (s == 'curatorApps') {
+            document.getElementById('lst:curatorApps').style.display = 'initial';
+        } else {
+            document.getElementById('lst:curatorApps').style.display = 'none';
         }
 
     }

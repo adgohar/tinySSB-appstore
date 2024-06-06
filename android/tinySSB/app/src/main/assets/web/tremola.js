@@ -161,8 +161,59 @@ function loadCuratorsUI(curatorListString) {
 
 }
 
+function loadAppsUI(appListString, appIDListString, appStatusListString) {
+    goToApps()
+    const appListUI = document.getElementById('appsList')
+
+    const appList = appListString.split(", ");
+    const appIDList = appIDListString.split(", ");
+    const appStatusList = appStatusListString.split(", ")
+    removeAllAppsUI();
+    let i = 0;
+    let appString = "App";
+    for (const app of appList) {
+        addAppUI(appIDList[i], app, appStatusList[i]);
+        i += 1;
+    }
+}
+
+function addAppUI(appID, appName, appStatus) {
+    const appListUI = document.getElementById('appsList');
+
+    const appButton = document.createElement('button');
+    appButton.style.display = 'flex';
+    appButton.id = appID
+    appButton.style.flexDirection = 'column';
+    appButton.style.alignItems = 'center';
+    appButton.style.justifyContent = 'center';
+
+    appButton.onclick = function () {
+        console.log(appStatus);
+        displayAppInfo(appID);
+    };
+
+    const appLabel = document.createElement('span');
+    appLabel.textContent = appName;
+
+    appButton.appendChild(appLabel);
+
+    appListUI.appendChild(appButton);
+}
+
+function displayAppInfo(appID) {
+
+}
+
+
 function removeAllCuratorsUI() {
     const curatorListUI = document.getElementById('curatorList');
+    while (curatorListUI.firstChild) {
+        curatorListUI.removeChild(curatorListUI.firstChild);
+    }
+}
+
+function removeAllAppsUI() {
+    const curatorListUI = document.getElementById('appsList');
     while (curatorListUI.firstChild) {
         curatorListUI.removeChild(curatorListUI.firstChild);
     }
@@ -179,7 +230,6 @@ function addCreatorUI(curatorID, curatorName) {
     curatorButton.style.justifyContent = 'center';
 
     curatorButton.onclick = function () {
-        console.log(curatorButton.id)
         loadCurator(curatorID);
     };
 
@@ -189,6 +239,16 @@ function addCreatorUI(curatorID, curatorName) {
     curatorButton.appendChild(curatorLabel);
 
     curatorListUI.appendChild(curatorButton);
+}
+
+function goToApps() {
+    removeAllCuratorsUI()
+    setScenario("curatorApps")
+}
+
+function loadCurator(curatorID) {
+    console.log(curatorID);
+    backend("apps:listCuratorApps " + curatorID)
 }
 
 function createAppUI(appName, appIconBase64) {

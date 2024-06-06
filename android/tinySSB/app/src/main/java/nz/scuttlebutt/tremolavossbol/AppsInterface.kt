@@ -7,7 +7,7 @@ import android.content.Context
 class AppsInterface (context: Context) {
     private val context = context
 
-    fun getAppDirectoryPath(): String {
+    private fun getAppDirectoryPath(): String {
         val appContext = context // Assuming this is called within an Activity or Context
         val filesDir = appContext.filesDir // Path to /data/data/your_app_package_name/files
 
@@ -19,6 +19,18 @@ class AppsInterface (context: Context) {
         }
 
         return appsSubDir.toString()
+    }
+
+    fun checkIfAppExists(appFeedID: String): Boolean {
+        val appsDirectory = File(getAppDirectoryPath())
+
+        val appFolder = File(appsDirectory, appFeedID)
+
+        if (appFolder.exists() && appFolder.isDirectory) {
+            return true
+        } else {
+            return false
+        }
     }
 
     fun listApps(): MutableMap<String, String> {
