@@ -161,6 +161,8 @@ function loadCuratorsUI(curatorListString) {
 
 }
 
+
+
 function loadAppsUI(appListString, appIDListString, appStatusListString) {
     goToApps()
     const appListUI = document.getElementById('appsList')
@@ -189,7 +191,7 @@ function addAppUI(appID, appName, appStatus) {
 
     appButton.onclick = function () {
         console.log(appStatus);
-        displayAppInfo(appID);
+        displayAppInfo(appID, appName, appStatus);
     };
 
     const appLabel = document.createElement('span');
@@ -200,10 +202,104 @@ function addAppUI(appID, appName, appStatus) {
     appListUI.appendChild(appButton);
 }
 
-function displayAppInfo(appID) {
+function displayAppInfo(appID, appName, appStatus) {
+    hideAppPopup();
+    console.log(appID);
+    document.getElementById('appInstallBtn').style.display = "none";
+    document.getElementById('appLaunchBtn').style.display = "none";
+    document.getElementById('appPullBtn').style.display = "none";
+    document.getElementById('appTitle').innerText = appName
+    document.getElementById('appLabelNameText').innerText = appName;
+    document.getElementById('appLabelStatusText').innerText = "Not available";
+    if (appStatus == 1) {
+        document.getElementById('appLaunchBtn').style.display = "block";
+        document.getElementById('appDeleteBtn').style.display = "block";
+        document.getElementById('appDeleteBtn').onclick = function () {
+            deleteApp(appID);
+        };
+        document.getElementById('appLabelStatusText').innerText = "Installed";
+    } else if (appStatus == 2) {
+        document.getElementById('appInstallBtn').style.display = "block";
+        document.getElementById('appInstallBtn').onclick = function () {
+                getAppVersions(appID);
+            };
+        document.getElementById('appLabelStatusText').innerText = "Available";
+    } else if (appStatus == 3) {
+        document.getElementById('appPullBtn').style.display = "block";
+    }
+    document.getElementById('appPopup').style.display = 'block';
+}
+
+document.getElementById('closeAppPopup').onclick = function() {
+    hideAppPopup();
+  };
+
+
+
+function deleteApp(appID) {
+    backend("apps:deleteApp " + appID)
+    hideAppPopup();
+}
+
+function hideAppPopup() {
+    document.getElementById('appPopup').style.display = 'none';
+    document.getElementById('appVersionsPopup').style.display = "none";
+}
+
+function getAppVersions(appID) {
+    backend("apps:listAppVersions " + appID);
+}
+
+function displayReleases(versionListString, commentListString, appID) {
+
+    const versionList = versionListString.split(", ");
+    const commentList = commentListString.split(", ");
+
+    // Get the appVersionsPopup element
+    const appVersionsPopup = document.getElementById('appVersionsPopup');
+
+    // Remove all existing child elements
+    while (appVersionsPopup.firstChild) {
+        appVersionsPopup.removeChild(appVersionsPopup.firstChild);
+    }
+
+    // Loop through versions and comments and create HTML elements
+    for (let i = 0; i < versionList.length; i++) {
+        const versionDiv = document.createElement('div');
+        versionDiv.classList.add('version');
+
+        const versionNumber = document.createElement('div');
+        versionNumber.classList.add('version-number');
+        versionNumber.textContent = `Version: ${versionList[i]}`;
+
+        const comment = document.createElement('div');
+        comment.classList.add('comment');
+        comment.textContent = `Comment: ${commentList[i]}`;
+
+        const downloadButton = document.createElement('button');
+        downloadButton.textContent = 'Download';
+        downloadButton.classList.add('download-button');
+        downloadButton.onclick = function () {
+           downloadAppVersion(appID, versionList[i]);
+       };
+
+
+        versionDiv.appendChild(versionNumber);
+        versionDiv.appendChild(comment);
+        versionDiv.appendChild(downloadButton);
+
+        appVersionsPopup.appendChild(versionDiv);
+    }
+
+    // Optionally, display the popup
+    appVersionsPopup.style.display = 'block';
+    document.getElementById("appPopup").style.display = "none";
 
 }
 
+function downloadAppVersion(appID, version) {
+    backend("apps:downloadAppVersion " + appID + " " + version);
+}
 
 function removeAllCuratorsUI() {
     const curatorListUI = document.getElementById('curatorList');

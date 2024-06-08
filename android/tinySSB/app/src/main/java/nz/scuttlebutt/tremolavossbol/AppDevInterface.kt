@@ -8,6 +8,7 @@ import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
 import org.json.JSONObject
 import java.io.File
+import java.nio.file.Paths
 import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext.SupertypesPolicy.None
 
 data class AppData(
@@ -16,6 +17,11 @@ data class AppData(
     val appDescList: ArrayList<String>,
     val developerIDList: ArrayList<String>,
     val statusList: ArrayList<String>,
+)
+
+data class ReleaseData(
+    val versionList: ArrayList<String>,
+    val commentList: ArrayList<String>,
 )
 
 
@@ -166,6 +172,113 @@ class AppDevInterface(val act: MainActivity) {
         return -1
     }
 
+    fun listAppVersions(fid: String) : ReleaseData {
+        val versionList = ArrayList<String>()
+        val commentList = ArrayList<String>()
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val lastSeq = r?.state?.max_seq
+        if (lastSeq != null) {
+            for (i in 1 until  lastSeq + 1) {
+                val entry = r?.read_content(i)
+                val entryType = entry?.let { getFromEntry(it, 0) }
+                if (entryType == "R") {
+                    if (entry is ByteArray) {
+                        val version = getFromEntry(entry, 1)
+                        val assets = getFromEntry(entry, 2)
+                        val comment = getFromEntry(entry, 3)
+                        versionList.add(version.toString())
+                        commentList.add(comment.toString())
+                        Log.d("Details App Releases (Version)", version.toString())
+                        Log.d("Details App Releases (Assets)", assets.toString())
+                        Log.d("Details App Releases (Comment)", comment.toString())
+                    }
+                }
+            }
+        }
+        return ReleaseData(versionList, commentList)
+    }
+
+    fun getReleaseSequence(fid: String, version: String): Int {
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val lastSeq = r?.state?.max_seq
+
+        if (lastSeq != null) {
+            for (i in 1 until  lastSeq + 1) {
+                val entry = r?.read_content(i)
+                val entryType = entry?.let { getFromEntry(it, 0) }
+                if (entryType == "R") {
+                    if (entry is ByteArray) {
+                        val found_version = getFromEntry(entry, 1)
+                        if (found_version == version) {
+                            return i
+                        }
+                    }
+                }
+            }
+        }
+        return -1
+    }
+
+    fun downloadAppVersion(fid: String, version: String) {
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val seq = getReleaseSequence(fid, version)
+
+        if (seq == -1) {
+            Log.d("Download Error", "Could not find App Version")
+            return
+        }
+        val entry = r?.read_content(seq)
+        val entryType = entry?.let { getFromEntry(it, 0) }
+        if (entryType == "R") {
+            if (entry is ByteArray) {
+                val version = getFromEntry(entry, 1)
+                var assets = getFromEntry(entry, 2)
+                val comment = getFromEntry(entry, 3)
+                Log.d("Details App Releases (Version)", version.toString())
+                Log.d("Details App Releases (Assets)", assets.toString())
+                Log.d("Details App Releases (Comment)", comment.toString())
+
+                val ctx = act.applicationContext
+                val appsInterface = AppsInterface(ctx)
+
+                val appPath = appsInterface.getAppDirectoryPath()
+
+                appsInterface.removeApp(fid)
+
+                appsInterface.createDirectory(appPath, fid)
+
+                assets = JSONObject(assets.toString())
+
+                val keys: Iterator<String> = assets.keys()
+                while (keys.hasNext()) {
+                    val assetName = keys.next()
+                    val assetSeq = assets.get(assetName)
+                    getAndDownloadAsset(fid, assetSeq as Int, Paths.get(appPath, fid, assetName).toString(), assetName)
+                }
+
+            }
+
+        }
+    }
+
+    fun getAndDownloadAsset(fid: String, assetSeq: Int, path: String, fileName: String) {
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val entry = r?.read_content(assetSeq)
+        val entryType = entry?.let { getFromEntry(it, 0) }
+        if (entryType == "A") {
+            if (entry is ByteArray) {
+                val asset = getFromEntry(entry, 1)
+
+                val ctx = act.applicationContext
+                val appsInterface = AppsInterface(ctx)
+
+                val appPath = appsInterface.getAppDirectoryPath()
+
+                appsInterface.updateApp(fid, fileName, asset.toString())
+            }
+        }
+    }
+
     fun listCuratorApps(fid: String): AppData {
         val r = act.tinyRepo.fid2replica(fid.decodeHex())
         var localStatus = -99
@@ -260,6 +373,7 @@ class AppDevInterface(val act: MainActivity) {
                         val firstDecoded = Bipf.decode(first)
                         if (firstDecoded != null) {
                             val value = firstDecoded.get()
+                            Log.d("afasfasfaf", value.toString())
                             return value
                         }
                     }

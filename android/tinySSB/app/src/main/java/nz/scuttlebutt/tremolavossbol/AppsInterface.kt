@@ -7,7 +7,7 @@ import android.content.Context
 class AppsInterface (context: Context) {
     private val context = context
 
-    private fun getAppDirectoryPath(): String {
+    fun getAppDirectoryPath(): String {
         val appContext = context // Assuming this is called within an Activity or Context
         val filesDir = appContext.filesDir // Path to /data/data/your_app_package_name/files
 
@@ -148,7 +148,7 @@ class AppsInterface (context: Context) {
                 return "No app with name " + appName
             } else {
                 try {
-                    val fileBytes = Base64.getDecoder().decode(fileContent)
+                    val fileBytes = fileContent.toByteArray()
                     val file = File(newAppFolder, fileName)
                     file.writeBytes(fileBytes)
                     return "Successfully updated app: $appName , added file: $fileName"

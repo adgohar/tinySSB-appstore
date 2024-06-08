@@ -65,6 +65,25 @@
   </div>
 
   <div id='lst:curatorApps' class=appStoreDiv style="display: none;">
+    <div id="appVersionsPopup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 10000; width:80vw;">
+      <h2 id='appVersions'>App Versions</h2>
+    </div>
+    <div id='appPopup' style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1000; width:80vw;">
+      <span id="closeAppPopup" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">&times;</span>
+      <h2 id='appTitle'>App Title</h2>
+      <div id='appLabels'>
+        <div><label id='appLabelName'>App Name:</label> <span id='appLabelNameText'>Name</span></div>
+        <div><label id='appLabelDeveloper'>App Developer:</label> <span id='appLabelDeveloperText'>Dev</span></div>
+        <div><label id='appLabelStatus'>App Status:</label> <span id='appLabelStatusText'>Status</span></div>
+      </div>
+      <br>
+      <div>
+        <button id='appInstallBtn' style="display: none;">Install App</button>
+        <button id='appLaunchBtn' style="display: none;">Launch App</button>
+        <button id='appPullBtn' style="display: none;">Pull App</button>
+        <button id='appDeleteBtn' style="display: none;">Delete App</button>
+      </div>
+    </div>
     <div id='curatorHeader' >App Store (Apps)</div>
     <div id='appsList'>
     </div>

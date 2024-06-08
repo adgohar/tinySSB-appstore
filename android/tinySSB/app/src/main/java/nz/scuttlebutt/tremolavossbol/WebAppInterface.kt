@@ -337,6 +337,38 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 eval("loadAppsUI('$appListString', '$appIDListString', '$appStatusListString')")
             }
             }
+            "apps:listAppVersions" -> {
+                if (args.size <2 || args[1] == "" ) {
+                    Log.d("AppsRequest", "Required: App ID")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    val appReleases = developerInterface.listAppVersions(args[1])
+                    val versionList = appReleases.versionList
+                    val commentList = appReleases.commentList
+                    val appID = args[1]
+                    Log.d("AppVersions", appReleases.toString())
+                    val versionListString = versionList.toString().substring( 1, versionList.toString().length - 1 )
+                    val commentListString = commentList.toString().substring( 1, commentList.toString().length - 1 )
+                    eval("displayReleases('$versionListString', '$commentListString', '$appID')")
+                }
+            }
+            "apps:downloadAppVersion" -> {
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: App ID & Version")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    val appReleases = developerInterface.downloadAppVersion(args[1], args[2])
+                }
+            }
+            "apps:deleteApp" -> {
+                if (args.size < 2 || args[1] == "") {
+                    Log.d("AppsRequest", "Required: App ID")
+                } else {
+                    val ctx = act.applicationContext
+                    val appsInterface = AppsInterface(ctx)
+                    appsInterface.removeApp(args[1])
+                }
+            }
             "apps:createApp" -> {
                 if (args.size <3 || args[1] == "" || args[2] == "") {
                     Log.d("AppsRequest", "Required: App Name and Description")
