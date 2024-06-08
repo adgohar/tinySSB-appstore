@@ -63,6 +63,7 @@ def createAppFeed(appName: str, appDesc: str):
 
 def showReleases(appName: str):
     fid = getFeedID(appName)
+    
     if fid is None:
         print("App not found")
         return None
@@ -85,9 +86,14 @@ def showReleases(appName: str):
             firstElementStr = decodedElements[0]
 
             if firstElementStr == "R":
-                release = decodedElements[1]
-                version = release.get("version")
-                comment = release.get("comment")
+                version = decodedElements[1]
+                assets = decodedElements[2]
+                comment = decodedElements[3]
+                release = {
+                    "version": version,
+                    "assets": assets,
+                    "comment": comment
+                }
                 releases.append(release)
             else:
                 pass
@@ -140,9 +146,14 @@ def getActiveRelease(appName: str):
             firstElementStr = decodedElements[0]
 
             if firstElementStr == "R":
-                release = decodedElements[1]
-                version = release.get("version")
-                comment = release.get("comment")
+                version = decodedElements[1]
+                assets = decodedElements[2]
+                comment = decodedElements[3]
+                release = {
+                    "version": version,
+                    "assets": assets,
+                    "comment": comment
+                }
                 return release
             else:
                 pass
@@ -271,12 +282,11 @@ def insertReleaseIntoAppFeed(fid_hex: str , version: str, comment: str, files_js
         # Create the list to be encoded
         appInsertList = [
             bipf.dumps("R"),
-            bipf.dumps({
-                "version": version,
-                "assets": files,
-                "comment": comment
-            })
+            bipf.dumps(version),
+            bipf.dumps(files),
+            bipf.dumps(comment)
         ]
+
         # Encode the list of encoded elements
         encodedInsertList = bipf.dumps(appInsertList)
         
@@ -379,11 +389,11 @@ def downloadApp(appName: str, path: str, release: str=None):
             firstElementStr = decodedElements[0]
 
             if firstElementStr == "R":
-                release = decodedElements[1]
-                print(f"Release: {release}")
+                version = decodedElements[1]
+                print(f"Release: {version}")
                 #Release: {'version': '1.1', 'assets': '{"Basel Wappen.png": 2, "FNA.csv": 3, "Suva Pr\\u00e4si.pdf": 4}', 'comment': 'This is my First Release'}
                 #go through the assets and download them
-                assets = json.loads(release.get("assets"))
+                assets = json.loads(decodedElements[2])
                 #now clear old folder, delete every file there
                 for file in os.listdir(path):
                     os.remove(os.path.join(path, file))
@@ -416,8 +426,8 @@ def getReleaseSequence(fid_hex: str, release: str):
         firstElementStr = decodedElements[0]
 
         if firstElementStr == "R":
-            found_release = decodedElements[1]            
-            found_version = found_release.get("version")
+            version = decodedElements[1]
+            found_version = version
 
             if found_version == release:
                 print(f"Release found at sequence {i}")
@@ -446,7 +456,14 @@ def getRelease(fid_hex: str, seq: str):
         firstElementStr = decodedElements[0]
 
         if firstElementStr == "R":
-            release = decodedElements[1]
+            version = decodedElements[1]
+            assets = decodedElements[2]
+            comment = decodedElements[3]
+            release = {
+                "version": version,
+                "assets": assets,
+                "comment": comment
+            }
             print(f"Release: {release}")
             return release
         else:
