@@ -3,6 +3,7 @@ import json
 import os
 import curpub as cp
 import Curator as cur
+import spub as sp
 import sys
 
 if __name__ == "__main__":
@@ -32,7 +33,13 @@ if __name__ == "__main__":
         sys.exit()
 
     elif args.command == "startReceiveServer":
-        asyncio.run(cp.mainIn(args.developerdata, args.receiveuri))
+        args.data = args.developerdata
+        args.role = 'in'
+        args.v = False
+        args.uri_or_port = args.receiveuri
+        args.ble = False
+        gosetKey = bytes.fromhex('0000000000000000000000000000000000000000000000000000000000000000')
+        asyncio.run(cp.mainIn(args.data ,args.uri_or_port, gosetKey))
         sys.exit()
 
     elif args.command == "updateCuratorFeed":
