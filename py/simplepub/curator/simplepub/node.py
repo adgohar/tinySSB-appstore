@@ -43,6 +43,9 @@ class PubNode:
             self.goset = goset.GOset(self, self.reps.keys(), verbose)
         else:
             self.goset = goset.GOset(self, gosetKeys, verbose)
+        if gosetKeys[0].hex() == "0000000000000000000000000000000000000000000000000000000000000000":
+            gosetKeys = []
+            self.goset = goset.GOset(self, gosetKeys, verbose)
         print(f"   goset keys: {self.goset.keys}")
         self.arm_dmx(self.goset.goset_dmx,
                      lambda dmx, buf: self.goset.incoming_goset_msg(dmx, buf),
@@ -123,7 +126,6 @@ class PubNode:
         # print(f"<< incoming {pkt[:20].hex()}.. ({len(pkt)}B)")
         lst = []
         dmx = pkt[:7] # DMX_LEN = 7
-        print("dmx hex: " + dmx.hex())
 
         if dmx in self.dmxt:
             # if not dmx in [self.want_dmx,self.chnk_dmx,self.goset.goset_dmx]:
