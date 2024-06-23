@@ -80,7 +80,7 @@ async def onConnect(sock, node, args):
     if args.v:
         print(f"-- <{sock.nm}> connection down")
 
-async def receiveCurator(data, url):
+async def main(data, curatorFidBytes, url, role='out'):
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
     if platform.system() != 'Windows':
@@ -88,93 +88,34 @@ async def receiveCurator(data, url):
 
     if url is None:
         url = "ws://127.0.0.1:8080"
-    
-    role = 'in' #developer will always be the initiator
-
-    gosetKey = bytes.fromhex('0000000000000000000000000000000000000000000000000000000000000000')
-
-    node = simplepub.node.PubNode(data, role, gosetKeys=gosetKey, type='user')
 
     #initialize args
     args = type('', (), {})()
-    args.v = True
+    args.v = False
     args.uri_or_port = url
     args.ble = False
     args.data = data
     args.role = role
 
+    node = simplepub.node.PubNode(args.data, args.role, args.v, gosetKeys=curatorFidBytes)
 
     try:
-        if type(url) == int:
-            if simplepub.ble.is_installed:
-                asyncio.create_task(
-                    simplepub.ble.serve(lambda s: onConnect(s, node, args)))
-            else:
-                print(f"BLE interface not supported")
-            print(f"Starting websocket responder on port {url}")
+        if type(args.uri_or_port) == int:
+            if args.ble:
+                if simplepub.ble.is_installed:
+                    asyncio.create_task(
+                        simplepub.ble.serve(lambda s: onConnect(s, node, args)))
+                else:
+                    print(f"BLE interface not supported")
+            print(f"Starting websocket responder on port {args.uri_or_port}")
             async with websockets.serve(lambda s: onConnect(s, node, args),
-                                        "0.0.0.0", url):
+                                        "0.0.0.0", args.uri_or_port):
                 await stop
         else:
-            print(f"Connecting to {url}")
-            async with websockets.connect(url) as wsock:
-                wsock.nm = 'w'
-                await onConnect(wsock, node, args)
-    except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
-        pass
-
-
-async def main(data, curatorFidBytes, url):
-    loop = asyncio.get_running_loop()
-    stop = loop.create_future()
-    if platform.system() != 'Windows':
-        loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
-
-
-    #get the curator feed from the devCurator.json file
-    file_path = "devCurator.json"
-    json_data = {}
-
-    if curatorFidBytes is None:
-        if os.path.exists(file_path):
-            with open(file_path, "r") as file:
-                try:
-                    json_data = json.load(file)
-                except json.JSONDecodeError:
-                    json_data = {}
-        curatorfid = json_data.get("fid")
-        curatorFidBytes = bytes.fromhex(curatorfid)
-
-    if url is None:
-        url = "ws://127.0.0.1:8080"
-    
-    role = 'out' #developer will always be the initiator
-
-    node = simplepub.node.PubNode(data, role, gosetKeys=curatorFidBytes, type='dev')
-
-    #initialize args
-    args = type('', (), {})()
-    args.v = True
-    args.uri_or_port = url
-    args.ble = False
-    args.data = data
-    args.role = role
-
-
-    try:
-        if type(url) == int:
-            if simplepub.ble.is_installed:
-                asyncio.create_task(
-                    simplepub.ble.serve(lambda s: onConnect(s, node, args)))
-            else:
-                print(f"BLE interface not supported")
-            print(f"Starting websocket responder on port {url}")
-            async with websockets.serve(lambda s: onConnect(s, node, args),
-                                        "0.0.0.0", url):
-                await stop
-        else:
-            print(f"Connecting to {url}")
-            async with websockets.connect(url) as wsock:
+            if args.ble:
+                print(f"Ignoring BLE interface when connecting.")
+            print(f"Connecting to {args.uri_or_port}")
+            async with websockets.connect(args.uri_or_port) as wsock:
                 wsock.nm = 'w'
                 await onConnect(wsock, node, args)
     except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
