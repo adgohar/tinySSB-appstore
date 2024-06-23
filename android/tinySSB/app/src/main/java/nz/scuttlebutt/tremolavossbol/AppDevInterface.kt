@@ -2,14 +2,14 @@ package nz.scuttlebutt.tremolavossbol
 
 import android.util.Log
 import nz.scuttlebutt.tremolavossbol.crypto.SodiumAPI
+import nz.scuttlebutt.tremolavossbol.tssb.AppConnector
 import nz.scuttlebutt.tremolavossbol.utils.Bipf
-import nz.scuttlebutt.tremolavossbol.utils.Bipf_e
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.decodeHex
 import nz.scuttlebutt.tremolavossbol.utils.HelperFunctions.Companion.toHex
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.nio.file.Paths
-import kotlin.reflect.jvm.internal.impl.types.AbstractTypeCheckerContext.SupertypesPolicy.None
 
 data class AppData(
     val appFeedIDList: ArrayList<String>,
@@ -105,6 +105,10 @@ class AppDevInterface(val act: MainActivity) {
         }
     }
 
+    fun deleteCurator(fid: String) {
+        act.tinyRepo.delete_feed(fid.decodeHex())
+    }
+
     private fun updateAppKeys(publicKey: ByteArray, privateKey: ByteArray) {
         //Dictionary with App Public Key as key and App private key as value
         val ctx = act.applicationContext
@@ -170,6 +174,73 @@ class AppDevInterface(val act: MainActivity) {
 
         //else return -1
         return -1
+    }
+
+    fun pullApp(appID: String, curatorID: String) {
+        val appKey = appID.decodeHex()
+        val appLinks = getAppLinks(curatorID, appID)
+        val firstLink = appLinks[0]
+
+        act.tinyRepo.context.tinyGoset._remove_all_keys()
+        act.tinyRepo.context.tinyGoset._add_key(appKey)
+        act.tinyRepo.context.connect_mode = 2
+        act.tinyRepo.context.original_websocket = act.settings!!.getWebsocketUrl()
+
+        act.settings?.setWebsocketUrl(firstLink)
+        act.websocket?.start()
+        
+        Log.d("test", act.tinyRepo.context.tinyGoset.keys.size.toString())
+    }
+
+    fun pullCurator(curatorLink: String) {
+
+        act.tinyRepo.context.tinyGoset._remove_all_keys()
+        act.tinyRepo.context.connect_mode = 1
+
+        act.tinyRepo.context.original_websocket = act.settings!!.getWebsocketUrl()
+
+        act.settings?.setWebsocketUrl(curatorLink)
+        act.websocket?.start()
+
+        Log.d("test", act.tinyRepo.context.tinyGoset.keys.size.toString())
+    }
+
+    fun getAppLinks(curatorID: String, appID: String): ArrayList<String> {
+        val r = act.tinyRepo.fid2replica(curatorID.decodeHex())
+        val linksList = ArrayList<String>()
+        val lastSeq = r?.state?.max_seq
+        if (lastSeq != null) {
+            for (i in lastSeq downTo 1) {
+                val entry = r?.read_content(i)
+                val entryType = entry?.let { getFromEntry(it, 0) }
+                if (entryType == "DevApp") {
+                    if (entry is ByteArray) {
+                        val appFeedID = getFromEntry(entry, 1)
+                        if (appFeedID is ByteArray) {
+                            val appFeedIDHex = appFeedID.toHex()
+                            if (appFeedIDHex == appID) {
+                                val details = getFromEntry(entry, 6)
+                                // Extract URL from JSON string
+                                val jsonObject = JSONObject(details.toString())
+                                var url = ""
+                                if (jsonObject.has("url")) {
+                                    url = jsonObject.getString("url")
+                                    // Parse the JSON string
+                                    val jsonArray = JSONArray(url)
+                                    // Convert the JSONArray to a Kotlin Array
+                                    val linksArray = Array(jsonArray.length()) { i -> jsonArray.getString(i) }
+                                    for (url in linksArray) {
+                                        linksList.add(url)
+                                    }
+                                    return linksList
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return linksList
     }
 
     fun listAppVersions(fid: String) : ReleaseData {
@@ -274,7 +345,7 @@ class AppDevInterface(val act: MainActivity) {
 
                 val appPath = appsInterface.getAppDirectoryPath()
 
-                appsInterface.updateApp(fid, fileName, asset.toString())
+                appsInterface.updateApp(fid, fileName, asset)
             }
         }
     }

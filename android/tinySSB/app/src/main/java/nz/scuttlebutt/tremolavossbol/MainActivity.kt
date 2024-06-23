@@ -41,9 +41,9 @@ class MainActivity : Activity() {
     lateinit var wai: WebAppInterface
     lateinit var tinyIO: IO
     val tinyNode = Node(this)
-    val tinyRepo = Repo(this)
     val tinyDemux = Demux(this)
     val tinyGoset = GOset(this)
+    val tinyRepo = Repo(this, tinyGoset)
     var settings: Settings? = null
     @Volatile var mc_group: InetAddress? = null
     @Volatile var mc_socket: MulticastSocket? = null
@@ -53,6 +53,8 @@ class MainActivity : Activity() {
     var broadcastReceiver: BroadcastReceiver? = null
     var isWifiConnected = false
     var ble_event_listener: BluetoothEventListener? = null
+    var connect_mode = 0 //0 for normal, 1 for curator, 2 for app
+    var original_websocket = ""
 
     /*
     var broadcast_socket: DatagramSocket? = null
@@ -158,7 +160,8 @@ class MainActivity : Activity() {
                         mkSockets()
                         if (websocket == null)
                             websocket = WebsocketIO(this@MainActivity, settings!!.getWebsocketUrl())
-                        websocket!!.start()
+                        if (connect_mode == 0)
+                            websocket!!.start()
                         Log.d("main", "msc_sock ${mc_socket.toString()}")
                     }, 1000)
                 } else if (networkInfo.detailedState == NetworkInfo.DetailedState.DISCONNECTED && isWifiConnected) {
@@ -323,9 +326,9 @@ class MainActivity : Activity() {
         } catch (e: Exception) {
             ble = null
         }
-
-        websocket = WebsocketIO(this, settings!!.getWebsocketUrl())
-        websocket!!.start()
+        if (connect_mode == 0)
+            websocket = WebsocketIO(this, settings!!.getWebsocketUrl())
+            websocket!!.start()
     }
 
     override fun onPause() {

@@ -142,6 +142,16 @@ function toggleAppScreen() {
     setScenario('game');
 }
 
+function pullCurator() {
+    var curatorLink = document.getElementById("curatorLinkInput").value;
+    if (curatorLink == null || curatorLink == "") {
+        closeCuratorPopup();
+        return
+    } else {
+        backend("apps:pullCurator " + curatorLink);
+    }
+}
+
 function requestCuratorsUI() {
     backend("apps:listCuratorFeeds")
 }
@@ -150,20 +160,20 @@ function loadCuratorsUI(curatorListString) {
     const curatorListUI = document.getElementById('curatorList')
 
     const curatorList = curatorListString.split(", ");
+    console.log("curatorList = " + curatorList);
     removeAllCuratorsUI();
     const curatorString = "Curator"
     let i = 0;
-    for (const curator of curatorList) {
-
-        addCreatorUI(curator, curatorString + (i+1));
-        i += 1;
+    if (curatorList != null && curatorList != "") {
+        for (const curator of curatorList) {
+                addCreatorUI(curator, curatorString + (i+1));
+                i += 1;
+        }
     }
 
 }
 
-
-
-function loadAppsUI(appListString, appIDListString, appStatusListString) {
+function loadAppsUI(appListString, appIDListString, appStatusListString, curatorID) {
     goToApps()
     const appListUI = document.getElementById('appsList')
 
@@ -174,12 +184,39 @@ function loadAppsUI(appListString, appIDListString, appStatusListString) {
     let i = 0;
     let appString = "App";
     for (const app of appList) {
-        addAppUI(appIDList[i], app, appStatusList[i]);
+        addAppUI(appIDList[i], app, appStatusList[i], curatorID);
         i += 1;
     }
+    const deleteCuratorBtn = document.createElement('button');
+    deleteCuratorBtn.style.display = 'flex';
+
+    deleteCuratorBtn.onclick = function () {
+        deleteCurator(curatorID);
+    };
+
+    // Create hidden input and set its value to curatorId
+    const curatorIdInput = document.createElement('input');
+    curatorIdInput.type = 'hidden';
+    curatorIdInput.id = 'curatorId'; // Optional: Set an id for the input to reference it later
+    curatorIdInput.value = curatorID; // Replace 'curatorIdValue' with the actual curatorId variable
+
+    appListUI.appendChild(curatorIdInput)
+
+
 }
 
-function addAppUI(appID, appName, appStatus) {
+function deleteCurator(curatorID) {
+
+}
+
+function delete_curator() {
+    let curatorIDElement = document.getElementById('curatorId');
+    let curatorID = curatorIDElement.value;
+    backend("apps:deleteCurator " + curatorID);
+    setScenario('apps')
+}
+
+function addAppUI(appID, appName, appStatus, curatorID) {
     const appListUI = document.getElementById('appsList');
 
     const appButton = document.createElement('button');
@@ -191,7 +228,7 @@ function addAppUI(appID, appName, appStatus) {
 
     appButton.onclick = function () {
         console.log(appStatus);
-        displayAppInfo(appID, appName, appStatus);
+        displayAppInfo(appID, appName, appStatus, curatorID);
     };
 
     const appLabel = document.createElement('span');
@@ -202,12 +239,13 @@ function addAppUI(appID, appName, appStatus) {
     appListUI.appendChild(appButton);
 }
 
-function displayAppInfo(appID, appName, appStatus) {
+function displayAppInfo(appID, appName, appStatus, curatorID) {
     hideAppPopup();
     console.log(appID);
     document.getElementById('appInstallBtn').style.display = "none";
     document.getElementById('appLaunchBtn').style.display = "none";
     document.getElementById('appPullBtn').style.display = "none";
+    document.getElementById('appDeleteBtn').style.display = "none";
     document.getElementById('appTitle').innerText = appName
     document.getElementById('appLabelNameText').innerText = appName;
     document.getElementById('appLabelStatusText').innerText = "Not available";
@@ -226,15 +264,20 @@ function displayAppInfo(appID, appName, appStatus) {
         document.getElementById('appLabelStatusText').innerText = "Available";
     } else if (appStatus == 3) {
         document.getElementById('appPullBtn').style.display = "block";
+        document.getElementById('appPullBtn').onclick = function () {
+            pullApp(appID, curatorID);
+        }
     }
     document.getElementById('appPopup').style.display = 'block';
+    document.getElementById('closeAppPopup').onclick = function() {
+        hideAppPopup();
+    };
 }
 
-document.getElementById('closeAppPopup').onclick = function() {
-    hideAppPopup();
-  };
 
-
+function pullApp(appID, curatorID) {
+    backend("apps:pullApp " + appID + " " + curatorID);
+}
 
 function deleteApp(appID) {
     backend("apps:deleteApp " + appID)

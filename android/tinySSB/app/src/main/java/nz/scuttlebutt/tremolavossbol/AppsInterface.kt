@@ -2,6 +2,7 @@ package nz.scuttlebutt.tremolavossbol
 import java.io.File
 import java.util.Base64
 import android.content.Context
+import android.util.Log
 
 
 class AppsInterface (context: Context) {
@@ -137,7 +138,7 @@ class AppsInterface (context: Context) {
         }
     }
 
-    fun updateApp(appName: String, fileName: String, fileContent: String): String {
+    fun updateApp(appName: String, fileName: String, fileContent: Any?): String {
         val appsDirectory = File(getAppDirectoryPath())
 
         // Check if app directory exists
@@ -148,9 +149,8 @@ class AppsInterface (context: Context) {
                 return "No app with name " + appName
             } else {
                 try {
-                    val fileBytes = fileContent.toByteArray()
                     val file = File(newAppFolder, fileName)
-                    file.writeBytes(fileBytes)
+                    file.writeBytes(fileContent as ByteArray)
                     return "Successfully updated app: $appName , added file: $fileName"
                 } catch (e: IllegalArgumentException) {
                     // This catches decode errors if the Base64 data is invalid

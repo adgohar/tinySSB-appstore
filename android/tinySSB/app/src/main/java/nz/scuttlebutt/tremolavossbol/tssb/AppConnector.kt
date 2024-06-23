@@ -7,9 +7,7 @@ import okhttp3.*
 import okio.ByteString
 import okio.ByteString.Companion.toByteString
 
-const val WS_CLOSE_NORMAL = 1000
-
-class WebsocketIO(val context: MainActivity, private var url: String) {
+class AppConnector(val context: MainActivity, private var url: String) {
     private var ws: WebSocket? = null
     private var reconnectJob: Job? = null
     private val client = OkHttpClient()
@@ -63,7 +61,6 @@ class WebsocketIO(val context: MainActivity, private var url: String) {
             Log.e("Websocket", "error: ${t.localizedMessage}")
             context.wai.eval("b2f_local_peer(\"ws\", \"$url\", \"${url}\", \"offline\")")
         }
-
     }
 
     fun getUrl(): String {
@@ -73,9 +70,7 @@ class WebsocketIO(val context: MainActivity, private var url: String) {
     fun send(buf: ByteArray) {
         if (ws == null)
             return
-
         ws!!.send(buf.toByteString())
-
     }
 
     //try to reconnect after failure

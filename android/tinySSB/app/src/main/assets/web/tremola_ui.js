@@ -24,7 +24,7 @@ var scenarioDisplay = {
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
     'apps': ['div:qr', 'core', 'lst:curators', 'div:footer', 'plus'],
-    'curatorApps': ['div:back', 'core', 'lst:curatorApps', 'div:footer', 'plus'],
+    'curatorApps': ['div:back', 'core', 'lst:curatorApps', 'div:footer'],
     'game': ['div:back', 'core', 'lst:appScreen']
 }
 
@@ -37,6 +37,12 @@ var scenarioMenu = {
         ['Settings', 'menu_settings'],
         ['About', 'menu_about']],
     'connex': [['New SSB pub', 'menu_new_pub'],
+        ['Redeem invite code', 'menu_invite'],
+        ['Connected Devices', 'menu_connection'],
+        // ['<del>Force sync</del>', 'menu_sync'],
+        ['Settings', 'menu_settings'],
+        ['About', 'menu_about']],
+    'curatorApps': [['Delete Curator', 'delete_curator'],
         ['Redeem invite code', 'menu_invite'],
         ['Connected Devices', 'menu_connection'],
         // ['<del>Force sync</del>', 'menu_sync'],
@@ -327,8 +333,19 @@ function plus_button() {
     } else if (curr_scenario == 'kanban') {
         menu_new_board();
     } else if (curr_scenario == 'apps') {
-        appController();
+        showAddCurator();
     }
+}
+
+function showAddCurator() {
+    document.getElementById("addCuratorPopup").style.display = "block";
+    document.getElementById('closeCuratorPopup').onclick = function() {
+        closeCuratorPopup();
+    };
+}
+
+function closeCuratorPopup() {
+    document.getElementById("addCuratorPopup").style.display = "none";
 }
 
 function launch_snackbar(txt) {
@@ -545,6 +562,7 @@ function refresh_chunk_progressbar(remaining) {
     } else {
         document.getElementById('connection-overlay-progressbar-chnk').value = 100
         document.getElementById('connection-overlay-progressbar-label-chnk').textContent = "Chunks — Synchronized"
+        backend("apps:resetConnectionMode")
     }
 
 }

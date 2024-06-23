@@ -19,7 +19,7 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlin.random.Random
 
-class Repo(val context: MainActivity) {
+class Repo(val context: MainActivity, gOset: GOset) {
     val TINYSSB_DIR = "tinyssb"
     val FEED_DIR = "feeds"
     private var loadingFinished = false // indicates whether all replicas have already been loaded into the repo.
@@ -29,6 +29,7 @@ class Repo(val context: MainActivity) {
     private var want_offs = 0
     private var chnk_offs = 0
     private var numberOfPendingChunks = 0
+    var goset = gOset
 
     private fun clean(dir: File) {
         for (f in dir.listFiles() ?: emptyArray()) {
@@ -48,12 +49,15 @@ class Repo(val context: MainActivity) {
     }
 
     fun load() {
+        if (this.goset == null) {
+            this.goset = context.tinyGoset
+        }
         val fdir = File(context.getDir(TINYSSB_DIR, MODE_PRIVATE), FEED_DIR)
         fdir.mkdirs()
 
         for (f in fdir.listFiles { file -> file.isDirectory && file.name.length == 2 * FID_LEN} ?: emptyArray()) {
             add_replica(f.name.decodeHex())
-            context.tinyGoset._add_key(f.name.decodeHex())
+            goset._add_key(f.name.decodeHex())
         }
 
         loadingFinished = true
@@ -80,9 +84,9 @@ class Repo(val context: MainActivity) {
 
 
 
-        if (context.tinyGoset.keys.size > 1) {
-            want_offs = Random.nextInt(0, context.tinyGoset.keys.size - 1)
-            chnk_offs = Random.nextInt(0, context.tinyGoset.keys.size - 1)
+        if (goset.keys.size > 1) {
+            want_offs = Random.nextInt(0, goset.keys.size - 1)
+            chnk_offs = Random.nextInt(0, goset.keys.size - 1)
         }
 
         if(context.isWaiInitialized())
@@ -147,9 +151,9 @@ class Repo(val context: MainActivity) {
 
         lst.add(want_offs)
         var i = 0
-        while (i < context.tinyGoset.keys.size) {
-            val ndx = (want_offs + i) % context.tinyGoset.keys.size
-            val fid = context.tinyGoset.keys[ndx]
+        while (i < goset.keys.size) {
+            val ndx = (want_offs + i) % goset.keys.size
+            val fid = goset.keys[ndx]
             val r = fid2replica(fid)
             if (r == null) {
                 i++
@@ -164,9 +168,6 @@ class Repo(val context: MainActivity) {
                 break
         }
 
-
-
-
         if(lst.size > 1) {
             // notify frontend
             var vec = lst.slice(1 .. lst.lastIndex) // want_vector without offset
@@ -178,8 +179,10 @@ class Repo(val context: MainActivity) {
             return Bipf.encode(Bipf.mkList(lst))
         }
 
-        want_offs = (want_offs + i + 1) % context.tinyGoset.keys.size
-        want_is_valid = true
+        if (goset.keys.size > 0) {
+            want_offs = (want_offs + i + 1) % goset.keys.size
+            want_is_valid = true
+        }
         return null
     }
 
@@ -193,9 +196,9 @@ class Repo(val context: MainActivity) {
 
         //lst.add(chnk_offs)
         var i = 0
-        while (i < context.tinyGoset.keys.size) {
-            val ndx = (chnk_offs + i) % context.tinyGoset.keys.size
-            val fid = context.tinyGoset.keys[ndx]
+        while (i < goset.keys.size) {
+            val ndx = (chnk_offs + i) % goset.keys.size
+            val fid = goset.keys[ndx]
             val r = fid2replica(fid)
             val pending = r?.get_open_chains()
             if (pending == null || pending.isEmpty()) {
@@ -213,7 +216,7 @@ class Repo(val context: MainActivity) {
             i++
             if (encoding_len > 100)
                 break
-            chnk_offs = (chnk_offs + i + 1) % context.tinyGoset.keys.size
+            chnk_offs = (chnk_offs + i + 1) % goset.keys.size
 
         }
         chnk_is_valid = true

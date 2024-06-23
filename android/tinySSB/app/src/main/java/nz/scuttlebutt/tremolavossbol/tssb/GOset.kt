@@ -245,6 +245,17 @@ class GOset(val context: MainActivity) {
         Log.d("goset", "added key ${key.toHex()}, |keys|=${keys.size}")
     }
 
+    fun _remove_all_keys() {
+        // Clear all keys from the keys collection
+        keys.clear()
+
+        // Assuming novelty_credit and pending_novelty need to be reset or cleared
+        novelty_credit = 0
+        pending_novelty.clear()
+
+        Log.d("goset", "removed all keys, |keys|=${keys.size}")
+    }
+
     fun _add_pending_claim(cl: Claim) {
         for (c in pending_claims)
             if (c.sz == cl.sz && c.xo.contentEquals(cl.xo))

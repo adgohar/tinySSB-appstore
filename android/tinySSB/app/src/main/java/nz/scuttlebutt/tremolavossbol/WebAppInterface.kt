@@ -323,6 +323,7 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 Log.d("AppsRequest", "Required: Curator ID")
             } else {
                 val developerInterface = AppDevInterface(act)
+                val curatorID = args[1]
                 val appsListData = developerInterface.listCuratorApps(args[1])
                 val appsList = appsListData.appNameList
                 val appsIDList = appsListData.appFeedIDList
@@ -334,7 +335,7 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 val appStatusListString = appStatusList.toString().substring( 1, appStatusList.toString().length - 1 )
                 Log.d("AppString", appListString)
                 Log.d("AppIDString", appIDListString)
-                eval("loadAppsUI('$appListString', '$appIDListString', '$appStatusListString')")
+                eval("loadAppsUI('$appListString', '$appIDListString', '$appStatusListString', '$curatorID')")
             }
             }
             "apps:listAppVersions" -> {
@@ -358,6 +359,41 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                 } else {
                     val developerInterface = AppDevInterface(act)
                     val appReleases = developerInterface.downloadAppVersion(args[1], args[2])
+                }
+            }
+            "apps:pullApp" -> {
+                if (args.size < 3 || args[1] == "" || args[2] == "") {
+                    Log.d("AppsRequest", "Required: App ID & Curator ID")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    val appReleases = developerInterface.pullApp(args[1], args[2])
+                }
+            }
+            "apps:pullCurator" -> {
+                if (args.size < 2 || args[1] == "" ) {
+                    Log.d("AppsRequest", "Required: Curator Link")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    val appReleases = developerInterface.pullCurator(args[1])
+                }
+            } "apps:resetConnectionMode" -> {
+                if (act.tinyRepo.context.connect_mode != 0) {
+                    act.tinyRepo.context.websocket?.stop()
+                    act.tinyRepo.context.settings?.setWebsocketUrl(act.tinyRepo.context.original_websocket)
+                    act.tinyRepo.context.connect_mode = 0
+                    //goset reset
+                    act.tinyRepo.load()
+                    Log.d("apps:resetConnectionMode", act.tinyGoset.keys.size.toString())
+                    Log.d("apps:resetConnectionMode", act.tinyRepo.context.settings?.getWebsocketUrl().toString())
+                    Log.d("apps:resetConnectionMode", act.tinyRepo.context.connect_mode.toString())
+
+                }
+            } "apps:deleteCurator" -> {
+                if (args.size < 2 || args[1] == "" ) {
+                    Log.d("AppsRequest", "Required Curator ID")
+                } else {
+                    val developerInterface = AppDevInterface(act)
+                    developerInterface.deleteCurator(args[1])
                 }
             }
             "apps:deleteApp" -> {
