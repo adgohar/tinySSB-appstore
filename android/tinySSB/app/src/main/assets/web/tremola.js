@@ -56,15 +56,46 @@ function removeApp(appName) {
     backend("apps:removeApp " + appName);
 }
 
-function listApps(appNameListString, appIconListString) {
+function listApps(appNameListString, appIconListString, appFidsListString) {
+    removeAllAppsUI();
     const appNameList = JSON.parse(appNameListString);
     const appIconList = JSON.parse(appIconListString);
-    removeAllAppsUI();
+    const appFidsList = JSON.parse(appFidsListString);
     let i = 0;
     for (const appName of appNameList) {
-        createAppUI(appName, appIconList[i]);
+        createAppUI(appName, appIconList[i], appFidsList[i]);
         i += 1;
     }
+}
+
+function createAppUI(appName, appIconBase64, appFid) {
+    const appListUI = document.getElementById('appsList');
+
+    const appButton = document.createElement('button');
+    appButton.style.display = 'flex';
+    appButton.style.flexDirection = 'column';
+    appButton.style.alignItems = 'center';
+    appButton.style.justifyContent = 'center';
+
+    appButton.onclick = function () {
+        loadApp(appFid);
+    };
+
+    const imageDataUrl = `data:image/jpeg;base64,${appIconBase64}`;
+
+    const appImage = document.createElement('img');
+    appImage.src = imageDataUrl;
+    appImage.alt = appName;
+    appImage.style.width = '50px';
+    appImage.style.height = '50px';
+
+    const appLabel = document.createElement('span');
+    appLabel.textContent = appName;
+
+    appButton.appendChild(appImage);
+    appButton.appendChild(appLabel);
+
+    appListUI.appendChild(appButton);
 }
 
 function removeAllAppsUI() {
@@ -153,7 +184,7 @@ function loadCuratorsUI(curatorListString) {
     let i = 0;
     if (curatorList != null && curatorList != "") {
         for (const curator of curatorList) {
-                addCreatorUI(curator, curatorString + (i+1));
+                addCuratorUI(curator, curatorString + (i+1));
                 i += 1;
         }
     }
@@ -162,12 +193,12 @@ function loadCuratorsUI(curatorListString) {
 
 function loadAppsUI(appListString, appIDListString, appStatusListString, curatorID) {
     goToApps()
-    const appListUI = document.getElementById('appsList')
+    const appListUI = document.getElementById('curatorAppsList')
 
     const appList = appListString.split(", ");
     const appIDList = appIDListString.split(", ");
     const appStatusList = appStatusListString.split(", ")
-    removeAllAppsUI();
+    removeAllCuratorAppsUI();
     let i = 0;
     let appString = "App";
     for (const app of appList) {
@@ -204,7 +235,7 @@ function delete_curator() {
 }
 
 function addAppUI(appID, appName, appStatus, curatorID) {
-    const appListUI = document.getElementById('appsList');
+    const appListUI = document.getElementById('curatorAppsList');
 
     const appButton = document.createElement('button');
     appButton.style.display = 'flex';
@@ -269,6 +300,7 @@ function pullApp(appID, curatorID) {
 function deleteApp(appID) {
     backend("apps:deleteApp " + appID)
     hideAppPopup();
+    //TODO Refresh needed here to show the change
 }
 
 function hideAppPopup() {
@@ -338,14 +370,14 @@ function removeAllCuratorsUI() {
     }
 }
 
-function removeAllAppsUI() {
-    const curatorListUI = document.getElementById('appsList');
+function removeAllCuratorAppsUI() {
+    const curatorListUI = document.getElementById('curatorAppsList');
     while (curatorListUI.firstChild) {
         curatorListUI.removeChild(curatorListUI.firstChild);
     }
 }
 
-function addCreatorUI(curatorID, curatorName) {
+function addCuratorUI(curatorID, curatorName) {
     const curatorListUI = document.getElementById('curatorList');
 
     const curatorButton = document.createElement('button');
@@ -376,37 +408,6 @@ function loadCurator(curatorID) {
     console.log(curatorID);
     backend("apps:listCuratorApps " + curatorID)
 }
-
-function createAppUI(appName, appIconBase64) {
-    const appListUI = document.getElementById('appsList');
-
-    const appButton = document.createElement('button');
-    appButton.style.display = 'flex';
-    appButton.style.flexDirection = 'column';
-    appButton.style.alignItems = 'center';
-    appButton.style.justifyContent = 'center';
-
-    appButton.onclick = function () {
-        loadApp(appName);
-    };
-
-    const imageDataUrl = `data:image/jpeg;base64,${appIconBase64}`;
-
-    const appImage = document.createElement('img');
-    appImage.src = imageDataUrl;
-    appImage.alt = appName;
-    appImage.style.width = '50px';
-    appImage.style.height = '50px';
-
-    const appLabel = document.createElement('span');
-    appLabel.textContent = appName;
-
-    appButton.appendChild(appImage);
-    appButton.appendChild(appLabel);
-
-    appListUI.appendChild(appButton);
-}
-
 
 function menu_new_conversation() {
     fill_members();

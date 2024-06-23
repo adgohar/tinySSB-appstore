@@ -74,6 +74,27 @@
     font-size: medium;
 }
 
+#appsList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+#appsList button {
+    margin: 10px;
+}
+
+#curatorList {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+#curatorList button {
+    margin: 10px
+}
+
+
 #appstoreHeader {
     font-weight: bold;
     font-size: xx-large;
