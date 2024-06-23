@@ -11,7 +11,7 @@ if __name__ == "__main__":
     import argparse
 
     ap = argparse.ArgumentParser()
-    ap.add_argument('-command', choices=['commit', 'download', 'showReleases', 'setActiveRelease', 'getActiveRelease', 'end', 'status', 'updateCurator', 'generateCurator', 'showCuratorList', 'sendCurator', 'receiveCurator'], required=True,
+    ap.add_argument('-command', choices=['commit', 'download', 'showReleases', 'setActiveRelease', 'getActiveRelease', 'end', 'status', 'updateCurator', 'generateCurator', 'showCuratorList', 'sendCurator', 'startAppServer'], required=True,
                     help='Command to execute')
     ap.add_argument('-path', type=str,
                     help='Path to the app folder')
@@ -29,6 +29,9 @@ if __name__ == "__main__":
     ap.add_argument('receiveuri', type=str, nargs='?',
                     default='ws://127.0.0.1:8080',
                     help='TCP port if responder, URI if intiator (default is ws://127.0.0.1:8080)')
+    ap.add_argument('-app_uri', type=int, nargs='?',
+                    default='8080',
+                    help='TCP port if responder, URI if intiator (default is 8080)')
     args = ap.parse_args()
 
     if args.command == None:
@@ -125,6 +128,18 @@ if __name__ == "__main__":
         curatorList = devCurator.showCuratorList()
         for curator in curatorList:
             print(curator)
+    elif args.command == "startAppServer":
+        #get a list of apps
+        apps = dev.getAppsList()
+        for app in apps:
+            print(app)
+        app_input = input("Enter the name of the app you would like to start: ")
+        appFID = dev.getFeedID(app_input)
+        if (appFID == None):
+            print("App not found")
+            sys.exit()
+        role = 'out'
+        asyncio.run(devpub.main(args.data, bytes.fromhex(appFID), args.app_uri, role))
     elif args.command == "sendCurator":
         if args.senduri == None or args.data == None:
             print("Missing argument: senduri or data")
@@ -146,10 +161,3 @@ if __name__ == "__main__":
             curatorFidBytes = bytes.fromhex(curatorfid)
 
             asyncio.run(devpub.main(args.data, curatorFidBytes, args.senduri))
-
-    elif args.command == "receiveCurator":
-        if args.receiveuri == None or args.data == None:
-            print("Missing argument: receiveuri or data")
-            sys.exit()
-        else:
-            asyncio.run(devpub.receiveCurator(args.data, args.receiveuri))
