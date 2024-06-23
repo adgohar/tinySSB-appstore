@@ -76,6 +76,8 @@ def updateCuratorFeed():
                 devCuratorFeeds.append(fid.hex())
             else:
                 pass
+
+    print(f"Dev Curator Feeds {devCuratorFeeds}")
     
     for curatorFeed in devCuratorFeeds:
         #get list of apps in the curator feed
@@ -317,6 +319,22 @@ def isInCuratorFeed(app):
         else:
             pass
     return None
+
+def getCuratorFeed():
+    #get the curator feed from the curator.json file
+    file_path = "curator.json"
+    data = {}
+
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                data = {}
+
+    curatorfid = data.get("fid")
+
+    return curatorfid
 
 
 def createCuratorFeed():
