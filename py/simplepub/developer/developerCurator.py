@@ -208,6 +208,11 @@ def getAppFromCurator(appNameSearch: str, curatorfid: str = None):
     print("App not found")
     return None
 
+def updateDescription(appNameSearch: str, newCategory: str):
+    #get app details
+    appDesc = getAppFromCurator(appNameSearch)[3]
+    updateAppDesc(appNameSearch, appDesc)
+
 def updateCategory(appNameSearch: str, newCategory: str):
     #get app details
     appDetails = getAppFromCurator(appNameSearch)[6]

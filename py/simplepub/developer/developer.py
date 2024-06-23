@@ -525,6 +525,17 @@ def getAppStatus(appName: str):
         else:
             print(f"App {appName} is active")
             return "active"
+        
+def getAppsList():
+    #go through all folders in the data directory and for each folder get the first entry
+    #if the first entry is an app entry and the name matches the appName return the feedID
+    apps = []
+    for folder in os.listdir("data"):
+        fid = bytes.fromhex(folder)
+        r = replica.Replica("./data", fid, verify_fct)
+        foundAppName = getAppName(fid.hex())
+        apps.append(foundAppName)
+    return apps
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
