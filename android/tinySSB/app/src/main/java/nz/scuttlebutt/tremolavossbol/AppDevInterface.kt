@@ -130,6 +130,17 @@ class AppDevInterface(val act: MainActivity) {
         file.writeText(json.toString())
     }
 
+    fun getAppName(fid: String): String {
+        val ctx = act.applicationContext
+        val r = act.tinyRepo.fid2replica(fid.decodeHex())
+        val firstEntry = r?.read_content(1)
+        val firstEntryType = firstEntry?.let { getFromEntry(it, 0) }
+        if (firstEntryType == "APP") {
+            return getFromEntry(firstEntry, 2).toString()
+        }
+        return ""
+    }
+
     fun getAllAppFeeds() {
         val feeds = act.tinyRepo.listFeeds()
         val feedList = ArrayList<String>()
@@ -520,12 +531,6 @@ class AppDevInterface(val act: MainActivity) {
                 }
             }
         }
-    }
-
-    fun restoreVersion() {
-        //TODO
-        //Function to get release version of an App
-        //Should update the current files with the files belonging to a release
     }
 
     fun fileToByteArray(fileName: String): ByteArray? {

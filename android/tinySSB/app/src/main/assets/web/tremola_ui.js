@@ -23,8 +23,9 @@ var scenarioDisplay = {
     'settings': ['div:back', 'div:settings', 'core'],
     'kanban': ['div:qr', 'core', 'lst:kanban', 'div:footer', 'plus'],
     'board': ['div:back', 'core', 'div:board'],
-    'apps': ['div:qr', 'core', 'lst:curators', 'div:footer', 'plus'],
+    'appstore': ['div:qr', 'core', 'lst:curators', 'div:footer', 'plus'],
     'curatorApps': ['div:back', 'core', 'lst:curatorApps', 'div:footer'],
+    'apps': ['div:qr', 'core', 'lst:installedApps', 'div:footer'],
     'game': ['div:back', 'core', 'lst:appScreen']
 }
 
@@ -121,7 +122,7 @@ function setScenario(s) {
     var lst = scenarioDisplay[s];
     if (lst) {
         // if (s != 'posts' && curr_scenario != "members" && curr_scenario != 'posts') {
-        if (['chats', 'contacts', 'connex', 'kanban', 'apps'].indexOf(curr_scenario) >= 0) {
+        if (['chats', 'contacts', 'connex', 'kanban', 'appstore', 'apps'].indexOf(curr_scenario) >= 0) {
             var cl = document.getElementById('btn:' + curr_scenario).classList;
             cl.toggle('active', false);
             cl.toggle('passive', true);
@@ -155,7 +156,7 @@ function setScenario(s) {
             prev_scenario = s;
         }
         curr_scenario = s;
-        if (['chats', 'contacts', 'connex', 'kanban', 'apps'].indexOf(curr_scenario) >= 0) {
+        if (['chats', 'contacts', 'connex', 'kanban', 'appstore', 'apps'].indexOf(curr_scenario) >= 0) {
             var cl = document.getElementById('btn:' + curr_scenario).classList;
             cl.toggle('active', true);
             cl.toggle('passive', false);
@@ -179,7 +180,7 @@ function setScenario(s) {
             }
         }
 
-        if (s == 'apps') {
+        if (s == 'appstore') {
             document.getElementById('lst:curators').style.display = 'initial';
             document.getElementById('core').style.height = 'calc(100%-450px)';
             getApps();
@@ -198,6 +199,12 @@ function setScenario(s) {
         } else {
             document.getElementById('lst:curatorApps').style.display = 'none';
         }
+        if (s == 'apps') {
+            getInstalledApps()
+            document.getElementById('lst:installedApps').style.display = 'initial';
+        } else {
+            document.getElementById('lst:installedApps').style.display = 'none';
+        }
 
     }
 }
@@ -209,7 +216,7 @@ function loadAppStoreScreen() {
 
 function btnBridge(e) {
     var e = e.id, m = '';
-    if (['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex', 'btn:kanban', 'btn:apps'].indexOf(e) >= 0) {
+    if (['btn:chats', 'btn:posts', 'btn:contacts', 'btn:connex', 'btn:kanban', 'btn:appstore', 'btn:apps'].indexOf(e) >= 0) {
         setScenario(e.substring(4));
     }
     if (e == 'btn:menu') {
@@ -332,7 +339,7 @@ function plus_button() {
         menu_new_pub();
     } else if (curr_scenario == 'kanban') {
         menu_new_board();
-    } else if (curr_scenario == 'apps') {
+    } else if (curr_scenario == 'appstore') {
         showAddCurator();
     }
 }

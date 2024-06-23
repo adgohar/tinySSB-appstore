@@ -74,13 +74,19 @@
     font-size: medium;
 }
 
+#appstoreHeader {
+    font-weight: bold;
+    font-size: xx-large;
+    text-align: center;
+}
+
 #appsHeader {
     font-weight: bold;
     font-size: xx-large;
     text-align: center;
 }
 
-#appsList {
+#curatorAppsList {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

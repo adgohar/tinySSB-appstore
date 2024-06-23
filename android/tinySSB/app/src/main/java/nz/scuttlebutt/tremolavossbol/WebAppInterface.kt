@@ -436,6 +436,21 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     val developerInterface = AppDevInterface(act)
                     developerInterface.insertReleaseIntoAppFeed(args[1], args[2], args[3])
                 }
+            } "apps:listInstalledApps" -> {
+                val appsInterface = AppsInterface(act)
+                val appDevInterface = AppDevInterface(act)
+                val apps = appsInterface.listApps()
+                var appNameList = Bipf.mkList()
+                var appIconList = Bipf.mkList()
+                for (app in apps) {
+                    Bipf.list_append(appNameList, Bipf.mkString(appDevInterface.getAppName(app.key)))
+                    Bipf.list_append(appIconList, Bipf.mkString(app.value))
+                }
+                val appNames = Bipf.bipf_list2JSON(appNameList)
+                val appIcons = Bipf.bipf_list2JSON(appIconList)
+                Log.d("AppsRequest", "Apps: $appNames")
+                Log.d("AppsRequest", "Apps: $appIcons")
+                eval("listApps('$appNames', '$appIcons')")
             } else -> {
                 Log.d("onFrontendRequest", "unknown")
             }
