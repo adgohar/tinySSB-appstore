@@ -116,18 +116,9 @@ function loadDynamicApp(base64HTML, base64CSS, base64JS) {
         const cssContent = atob(base64CSS);
         const jsContent = atob(base64JS);
 
-        // Log the decoded content for debugging
-        console.log('Decoded HTML Content:', htmlContent);
-        console.log('Decoded CSS Content:', cssContent);
-        console.log('Decoded JS Content:', jsContent);
-
         // Properly escape special characters in the content
         const escapedCSS = cssContent.replace(/<\/style>/g, '<\\/style>');
         const escapedJS = jsContent.replace(/<\/script>/g, '<\\/script>');
-
-        // Log the escaped content for debugging
-        console.log('Escaped CSS Content:', escapedCSS);
-        console.log('Escaped JS Content:', escapedJS);
 
         // Construct the complete HTML content with embedded CSS and JS
         const completeHTML = `
@@ -154,9 +145,9 @@ function loadDynamicApp(base64HTML, base64CSS, base64JS) {
         var iframe = document.createElement('iframe');
         iframe.src = url;
         iframe.style.width = '100%';
-        iframe.style.height = '100vh';
+        iframe.style.height = '90vh';
         iframe.style.position = 'absolute';
-        iframe.style.top = '0';
+        iframe.style.top = '10';
         iframe.style.left = '0';
         iframe.style.border = 'none';
 
