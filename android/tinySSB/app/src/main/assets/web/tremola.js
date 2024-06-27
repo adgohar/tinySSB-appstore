@@ -109,9 +109,72 @@ function loadApp(appName) {
     backend("apps:loadApp " + appName);
 }
 
+function loadDynamicApp(base64HTML, base64CSS, base64JS) {
+    try {
+        // Decode base64 strings
+        const htmlContent = atob(base64HTML);
+        const cssContent = atob(base64CSS);
+        const jsContent = atob(base64JS);
+
+        // Log the decoded content for debugging
+        console.log('Decoded HTML Content:', htmlContent);
+        console.log('Decoded CSS Content:', cssContent);
+        console.log('Decoded JS Content:', jsContent);
+
+        // Properly escape special characters in the content
+        const escapedCSS = cssContent.replace(/<\/style>/g, '<\\/style>');
+        const escapedJS = jsContent.replace(/<\/script>/g, '<\\/script>');
+
+        // Log the escaped content for debugging
+        console.log('Escaped CSS Content:', escapedCSS);
+        console.log('Escaped JS Content:', escapedJS);
+
+        // Construct the complete HTML content with embedded CSS and JS
+        const completeHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>${escapedCSS}</style>
+            </head>
+            <body>
+                ${htmlContent}
+                <script>${escapedJS}<\/script>
+            </body>
+            </html>
+        `;
+
+        console.log('Complete HTML:', completeHTML);
+
+        // Create a blob from the complete HTML content
+        const blob = new Blob([completeHTML], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+
+        // Create an iframe element
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.width = '100%';
+        iframe.style.height = '100vh';
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.border = 'none';
+
+        // Clear the DynamicApplicationDiv and append the iframe
+        var div = document.getElementById('lst:appScreen');
+        div.innerHTML = '';
+        div.appendChild(iframe);
+    } catch (error) {
+        console.error('Error loading dynamic app:', error);
+    }
+    setScenario("game")
+}
+
+
+
 function loadAppHTML(htmlBase64) {
     let decodedHtml = atob(htmlBase64);
-    let appScreen = document.getElementById("appScreen");
+    let appScreen = document.getElementById("lst:appScreen");
     appScreen.innerHTML = decodedHtml;
 }
 
@@ -268,7 +331,6 @@ function displayAppInfo(appID, appName, appStatus, curatorID) {
     document.getElementById('appLabelNameText').innerText = appName;
     document.getElementById('appLabelStatusText').innerText = "Not available";
     if (appStatus == 1) {
-        document.getElementById('appLaunchBtn').style.display = "block";
         document.getElementById('appDeleteBtn').style.display = "block";
         document.getElementById('appDeleteBtn').onclick = function () {
             deleteApp(appID);

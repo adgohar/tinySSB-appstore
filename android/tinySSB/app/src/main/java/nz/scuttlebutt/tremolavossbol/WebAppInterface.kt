@@ -304,9 +304,10 @@ class WebAppInterface(val act: MainActivity, val webView: WebView) {
                     Log.d("AppsRequest", jsFile)
                     Log.d("AppsRequest", htmlFile)
                     Log.d("AppsRequest", cssFile)
-                    eval("loadAppHTML('$htmlFile')")
-                    eval("loadAppJS('$jsFile')")
-                    eval("loadAppCSS('$cssFile')")
+                    eval("loadDynamicApp('$htmlFile', '$cssFile', '$jsFile')")
+                    //eval("loadAppHTML('$htmlFile')")
+                    //eval("loadAppJS('$jsFile')")
+                    //eval("loadAppCSS('$cssFile')")
                 }
             } "apps:listAppFeeds" -> {
                 val developerInterface = AppDevInterface(act)

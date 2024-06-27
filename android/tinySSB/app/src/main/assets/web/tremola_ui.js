@@ -160,6 +160,10 @@ function setScenario(s) {
             var cl = document.getElementById('btn:' + curr_scenario).classList;
             cl.toggle('active', true);
             cl.toggle('passive', false);
+        } else if (curr_scenario == "curatorApps") {
+            var cl = document.getElementById('btn:appstore').classList;
+            cl.toggle('active', true);
+            cl.toggle('passive', false);
         }
         if (s == 'board')
             document.getElementById('core').style.height = 'calc(100% - 60px)';
@@ -190,9 +194,9 @@ function setScenario(s) {
         else {
             document.getElementById('lst:curators').style.display = 'none';
         } if (s == 'game') {
-            document.getElementById('appScreen').style.display = 'block';
+            document.getElementById('lst:appScreen').style.display = 'block';
         } else {
-            document.getElementById('appScreen').style.display = 'none'
+            document.getElementById('lst:appScreen').style.display = 'none'
         }
         if (s == 'curatorApps') {
             document.getElementById('lst:curatorApps').style.display = 'initial';

@@ -178,8 +178,10 @@ class AppsInterface (context: Context) {
             if (appFolder.exists() && appFolder.isDirectory) {
                 val jsFile = File(appFolder, "main.js") //load js file
                 val htmlFile = File(appFolder, "main.html") //load html file
+                val cssFile = File(appFolder, "styles.css")
                 var jsBase64: String
                 var htmlBase64: String
+                var cssBase64: String
 
                 if (jsFile.exists()) {
                     try {
@@ -205,6 +207,16 @@ class AppsInterface (context: Context) {
                     }
                 } else {
                     appFiles["Status"] = "Error: No HTML File for $appName"
+                }
+                if (cssFile.exists()) {
+                    try {
+                        val fileContent = cssFile.readBytes()
+                        cssBase64 = Base64.getEncoder().encodeToString(fileContent)
+                        appFiles["Status"] = "Success"
+                        appFiles["CSS"] = cssBase64
+                    } catch (e: Exception) {
+                        appFiles["Status"] = "Error: Could not load CSS File for $appName"
+                    }
                 }
             }
         } else {
