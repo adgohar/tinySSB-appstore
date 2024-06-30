@@ -134,7 +134,7 @@ def showDeveloperFeeds():
 
 
 def showCuratorFeed():
-    #loop through all folders in the DeveloperFeeds directory and return the feeds
+    #loop through all folders in the CuratorFeed directory and return the feeds
     devCuratorFeeds = []
 
     for folder in os.listdir("CuratorFeed"):
@@ -154,7 +154,7 @@ def showCuratorFeed():
 
             firstElementStr = decodedElements[0]
 
-            if firstElementStr == "DevCuratorFeed":
+            if firstElementStr == "CuratorFeed":
                 devCuratorFeeds.append(fid.hex())
             else:
                 pass
@@ -164,7 +164,7 @@ def showDeveloperList(curatorfid: str = None):
     #loop through all apps and return them as a list
 
     if curatorfid is None:        
-        #get the curator feed from the devCurator.json file
+        #get the curator feed from the curator.json file
         file_path = "curator.json"
         data = {}
 
@@ -214,7 +214,7 @@ def showCuratorList(curatorfid: str = None):
     #loop through all apps and return them as a list
 
     if curatorfid is None:        
-        #get the curator feed from the devCurator.json file
+        #get the curator feed from the curator.json file
         file_path = "curator.json"
         data = {}
 
@@ -401,6 +401,156 @@ def createCuratorFeed():
         if r is not None:            
             attempt = r.write_new(encodedCuratorList, signingKey)
             print(f"Attempt {attempt}")
+
+def getAppFromCurator(appNameSearch: str, curatorfid: str = None):
+
+    if curatorfid is None:
+
+        #get the curator feed from the curator.json file
+        file_path = "curator.json"
+        data = {}
+
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                try:
+                    data = json.load(file)
+                except json.JSONDecodeError:
+                    data = {}
+
+        curatorfid = data.get("fid")
+
+    r = replica.Replica("./CuratorFeed", bytes.fromhex(curatorfid), verify_fct)
+    lastSeq = r.state['max_seq']
+
+    for i in range(lastSeq, 0, -1):
+        entry = r.read(i)
+        decodedEntry, _ = bipf.decode(entry)
+        decodedElements = []
+
+        for element in decodedEntry:
+            decodedElement, _ = bipf.decode(element)
+            decodedElements.append(decodedElement)
+
+        firstElementStr = decodedElements[0]
+
+        if firstElementStr == "DevApp":
+            appFeedID = decodedElements[1]
+            appName = decodedElements[2]
+            appDesc = decodedElements[3]
+            developerID = decodedElements[4]
+            status = decodedElements[5]
+            details = decodedElements[6]
+            if appName == appNameSearch:
+                return decodedElements
+            else:
+                pass
+        else:
+            pass
+    print("App not found")
+    return None
+
+def updateCategory(appNameSearch: str, newCategory: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["category"] = newCategory
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+def updateSize(appNameSearch: str, newSize: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["size"] = newSize
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+def updateUrl(appNameSearch: str, newUrl: list):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["url"] = newUrl
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+
+def updateAgeRating(appNameSearch: str, newAgeRating: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["age"] = newAgeRating
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+def updateRating(appNameSearch: str, newRating: str):
+    #get app details
+    appDetails = getAppFromCurator(appNameSearch)[6]
+    appDetailsJson = json.loads(appDetails)
+    appDetailsJson["rating"] = newRating
+    newAppDetails = json.dumps(appDetailsJson)
+    updateAppDetails(appNameSearch, newAppDetails)
+
+def updateAppDetails(appNameSearch: str, newDetails: str):
+    #get the curator feed from the curator.json file
+    file_path = "curator.json"
+    data = {}
+
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            try:
+                data = json.load(file)
+            except json.JSONDecodeError:
+                data = {}
+
+    curatorfid = data.get("fid")
+    #get private key from the curator.json file
+    curatorPrivateKey = data.get(curatorfid)
+    
+    curatorFidBytes = bytes.fromhex(curatorfid)
+
+    appDevID = curatorFidBytes.hex()
+
+    r = replica.Replica("./CuratorFeed", curatorFidBytes, verify_fct)
+    lastSeq = r.state['max_seq']
+
+    for i in range(lastSeq, 0, -1):
+        entry = r.read(i)
+        decodedEntry, _ = bipf.decode(entry)
+        decodedElements = []
+
+        for element in decodedEntry:
+            decodedElement, _ = bipf.decode(element)
+            decodedElements.append(decodedElement)
+
+        firstElementStr = decodedElements[0]
+
+        if firstElementStr == "DevApp":
+            appFeedID = decodedElements[1]
+            appName = decodedElements[2]
+            appDesc = decodedElements[3]
+            developerID = decodedElements[4]
+            status = decodedElements[5]
+            details = decodedElements[6]
+            if appName == appNameSearch:
+                curatorList = [
+                    bipf.dumps("DevApp"),
+                    bipf.dumps(appFeedID),
+                    bipf.dumps(appName),
+                    bipf.dumps(appDesc),
+                    bipf.dumps(developerID),
+                    bipf.dumps(status),
+                    bipf.dumps(newDetails)
+                ]
+                encodedCuratorList = bipf.dumps(curatorList)
+                if encodedCuratorList is not None:
+                    print(f"ENCODED LIST BIPF {encodedCuratorList.hex()}")
+                if r is not None:
+                    r.write_new(encodedCuratorList, SigningKey(bytes.fromhex(curatorPrivateKey)))
+                    return 1
+                else:
+                    pass
+    print("App not found")
+    return None
 
 if __name__ == "__main__":
     updateCuratorFeed()
