@@ -122,7 +122,7 @@ async def receiveCurator(data, curatorFidBytes, url):
         pass
 
 
-async def mainOut(data, url, role, curatorFidBytes):
+async def mainOut(data, url, role="inout", curatorFidBytes=None):
     loop = asyncio.get_running_loop()
     stop = loop.create_future()
     if platform.system() != 'Windows':
@@ -130,6 +130,18 @@ async def mainOut(data, url, role, curatorFidBytes):
 
     if url is None:
         url = "ws://127.0.0.1:8080"
+
+    file_path = "curator.json"
+    json_data = {}
+    if curatorFidBytes is None:
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                try:
+                    json_data = json.load(file)
+                except json.JSONDecodeError:
+                    json_data = {}
+        curatorfid = json_data.get("fid")
+        curatorFidBytes = bytes.fromhex(curatorfid)
 
     #initialize args
     args = type('', (), {})()
